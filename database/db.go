@@ -52,6 +52,13 @@ func createTables() {
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			name TEXT NOT NULL UNIQUE
 		);`,
+		`CREATE TABLE IF NOT EXISTS post_categories (
+			post_id INTEGER NOT NULL,
+			category_id INTEGER NOT NULL,
+			FOREIGN KEY (post_id) REFERENCES posts (id) ON DELETE CASCADE,
+			FOREIGN KEY (category_id) REFERENCES categories (id) ON DELETE CASCADE,
+			PRIMARY KEY (post_id, category_id)
+		);`,
 		`CREATE TABLE IF NOT EXISTS likes_dislikes (
 			id INTEGER PRIMARY KEY AUTOINCREMENT,
 			user_id INTEGER NOT NULL,

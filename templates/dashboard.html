@@ -1,0 +1,193 @@
+{{define "dashboard"}}
+{{template "header" .}}
+<section class="dash-container">
+    <div class="sidebar">
+        <h3>Discover</h3>
+        <div class="sidebar-links">
+            <a href="#"><i class="fa-solid fa-spinner"></i>&emsp;Trending</a>
+            <a href="#"><i class="fa-regular fa-clock"></i>&emsp;Latest</a>
+            <a href="#"><i class="fa-regular fa-star"></i>&emsp;Top</a>
+        </div>
+        <h3>Categories</h3>
+        <div class="side-categoies">
+            {{range $category, $count := .Categories}}
+                <a href="#" class="category-link" data-category="{{$category}}">
+                    <i class="fa-solid fa-laptop-code"></i>&emsp;{{$category}}
+                    <span>{{$count}}</span>
+                </a>
+            {{end}}
+        </div>
+    </div>
+    <div class="posts">
+        <h3>Latest discussions</h3>
+        <p>Join the conversation and share your thoughts</p>
+
+        <!-- Flash Message -->
+        {{if .FlashMessage}}
+        <div class="flash-message">
+            {{.FlashMessage}}
+        </div>
+        {{end}}
+
+        <!-- Create Post Button -->
+        <div class="create-post">
+            <a href="/create-post" class="btn-create-post">Create New Post</a>
+        </div>
+
+        <!-- Posts List -->
+        {{range .Posts}}
+        <hr>
+        <div class="post-card" id="post-{{.ID}}">
+            <div class="profile">
+                <div class="avatar">
+                    <i class="fa-regular fa-user"></i>
+                    <div class="avatar-name">
+                        <p class="username">{{.Username}}</p> <!-- Display Username -->
+                        <p>{{.CreatedAtHuman}}</p>
+                    </div>
+                </div>
+                <div class="category-tag-container">
+                    <div class="category-tag">
+                        <p>{{.Category}}</p>
+                    </div>
+                    {{if eq .UserID $.UserID}}
+                    <div class="post-options-menu">
+                        <button class="btn-options" aria-label="Post options">
+                            <i class="fa-solid fa-ellipsis"></i>
+                        </button>
+                        <div class="options-dropdown" style="display: none;">
+                            <a href="/edit-post?id={{.ID}}" class="dropdown-item">
+                                <i class="fa-regular fa-pen-to-square"></i> Edit
+                            </a>
+                            <form action="/delete-post?id={{.ID}}" method="POST">
+                                <button type="submit" class="dropdown-item">
+                                    <i class="fa-regular fa-trash-can"></i> Delete
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    {{end}}
+                </div>               
+            </div>
+           
+            <div class="post">
+                <a href="/view-post?id={{.ID}}">
+                <h4>{{.Title}}</h4> <!-- Link to view post -->
+                 {{if .ImageURL}}
+                 <div class="post-image">
+                    <img src="{{.ImageURL}}" alt="Post Image" class="post-image-preview">
+                 </div>
+                 {{end}}
+                <p>{{.Preview}}</p>
+                </a>
+                <div class="reaction">
+                    <i class="btn-like" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-up"></i> <span>{{.Likes}}</span></i>
+                    <i class="btn-dislike" data-id="{{.ID}}"><i class="fa-regular fa-thumbs-down"></i> <span>{{.Dislikes}}</span></i>
+                    <i class="btn-comment" data-id="{{.ID}}"><i class="fa-regular fa-message"></i> <span>{{.CommentsCount}}</span></i>
+                    <div class="btn-share"><i class="fa-solid fa-share-nodes"></i></div>
+                </div>
+                <div class="reaction-prompt-container" id="reaction-prompt-{{.ID}}" style="display: none;">
+                    {{if $.IsAuthenticated}}
+                        <div class="reaction-actions">
+                            <!-- Reaction actions will be handled by JavaScript -->
+                        </div>
+                    {{else}}
+                        <div class="guest-reaction-prompt">
+                            <p><a href="/login">Login</a> or <a href="/signup">Sign up</a> to like or dislike the discussion</p>
+                        </div>
+                    {{end}}
+                </div>
+              
+                
+            </div>
+            
+        </div>
+        {{end}}
+    </div>
+
+    <!-- New Right Sidebar -->
+    <div class="right-sidebar">
+        <!-- Trending Topics -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-fire"></i> Trending Topics</h3>
+            <div class="trending-topics">
+                <div class="topic">
+                    <span class="topic-rank">#1</span>
+                    <span class="topic-name">JavaScript</span>
+                    <span class="topic-count">2.5k posts</span>
+                </div>
+                <!-- Add more trending topics -->
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="sidebar-section">
+            <h3><i class="fa-regular fa-clock"></i> Recent Activity</h3>
+            <div class="activity-feed">
+                <div class="activity-item">
+                    <i class="fa-regular fa-comment"></i>
+                    <div class="activity-content">
+                        <p><strong>John</strong> commented on <a href="#">How to use Go templates</a></p>
+                        <span class="activity-time">5 min ago</span>
+                    </div>
+                </div>
+                <!-- Add more activity items -->
+            </div>
+        </div>
+
+        <!-- Featured Users -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-users"></i> Top Contributors</h3>
+            <div class="featured-users">
+                <div class="user-card">
+                    <i class="fa-regular fa-user"></i>
+                    <div class="user-info">
+                        <strong>Username</strong>
+                        <span>500 posts</span>
+                    </div>
+                </div>
+                <!-- Add more user cards -->
+            </div>
+        </div>
+
+        <!-- Forum Stats -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-chart-simple"></i> Forum Stats</h3>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <span class="stat-value">1.2k</span>
+                    <span class="stat-label">Posts</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">5.4k</span>
+                    <span class="stat-label">Comments</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value">800</span>
+                    <span class="stat-label">Users</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Announcements -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-bullhorn"></i> Announcements</h3>
+            <div class="announcement">
+                <p class="announcement-title">New Feature Release!</p>
+                <p class="announcement-text">Check out our new real-time notification system.</p>
+                <span class="announcement-date">2 days ago</span>
+            </div>
+        </div>
+
+        <!-- Social Links -->
+        <div class="sidebar-section">
+            <h3><i class="fa-solid fa-share-nodes"></i> Follow Us</h3>
+            <div class="social-links">
+                <a href="#" class="social-link"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#" class="social-link"><i class="fa-brands fa-github"></i></a>
+                <a href="#" class="social-link"><i class="fa-brands fa-discord"></i></a>
+            </div>
+        </div>
+    </div>
+</section>
+{{end}}

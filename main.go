@@ -1,42 +1,71 @@
 package main
 
 import (
-	"log"
+	"fmt"
 	"net/http"
+	"strings"
 
 	"forum/database"
 	"forum/handlers"
 )
 
 func main() {
-	// Initialize database
-	database.InitDatabase()
-	defer database.DB.Close()
+	// initialize database
+	database.InitDB()
 
-	// Routes
-	http.HandleFunc("/register", handlers.RegisterHandler)
-	http.HandleFunc("/login", handlers.LoginHandler)
-	http.HandleFunc("/logout", handlers.LogoutHandler)
-	log.Println("Registering routes...")
-	http.HandleFunc("/posts", handlers.CreatePostHandler)
-	log.Println("Route /posts registered")
-
-	http.HandleFunc("/posts/all", handlers.GetPostsHandler)
-	log.Println("Route /posts/all registered")
-
-	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
-		if r.Method == http.MethodPost {
-			handlers.AddCommentHandler(w, r)
-		} else if r.Method == http.MethodGet {
-			handlers.GetCommentsHandler(w, r)
+	// Serve static files (CSS, JS)
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	// handles uploaded files
+	http.HandleFunc("/uploads/", func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, ".jpg") || strings.HasSuffix(r.URL.Path, ".png") {
+			http.StripPrefix("/uploads/", http.FileServer(http.Dir("./uploads"))).ServeHTTP(w, r)
 		} else {
-			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+			http.Error(w, "Forbidden", http.StatusForbidden)
 		}
 	})
 
-	http.HandleFunc("/reactions", handlers.AddReactionHandler)        // POST for adding reactions
-	http.HandleFunc("/reactions/count", handlers.GetReactionsHandler) // GET for fetching reaction counts
+	// Define explicit routes
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/" {
+			handlers.NotFoundHandler(w, r)
+			return
+		}
+		handlers.GuestMiddleware(http.HandlerFunc(handlers.HomeHandler)).ServeHTTP(w, r)
+	})
 
-	log.Println("Server running on http://localhost:8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/login", handlers.LoginHandler)
+	http.HandleFunc("/signup", handlers.SignUpHandler)
+	http.HandleFunc("/logout", handlers.LogoutHandler)
+
+	// Wrap the DashboardHandler with AuthMiddleware
+	http.Handle("/dashboard", handlers.AuthMiddleware(http.HandlerFunc(handlers.DashboardHandler)))
+	http.Handle("/create-post", handlers.AuthMiddleware(http.HandlerFunc(handlers.CreatePostHandler)))
+	http.Handle("/posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.ListPostsHandler)))
+	http.Handle("/view-post", handlers.GuestMiddleware(http.HandlerFunc(handlers.ViewPostHandler)))
+	http.Handle("/edit-post", handlers.AuthMiddleware(
+		handlers.OwnershipMiddleware(
+			http.HandlerFunc(handlers.EditPostHandler))))
+	http.Handle("/delete-post", handlers.AuthMiddleware(
+		handlers.OwnershipMiddleware(
+			http.HandlerFunc(handlers.DeletePostHandler))))
+	http.Handle("/like-post", handlers.AuthMiddleware(http.HandlerFunc(handlers.LikePostHandler)))
+	http.Handle("/dislike-post", handlers.AuthMiddleware(http.HandlerFunc(handlers.DislikePostHandler)))
+	http.Handle("/add-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.AddCommentHandler)))
+	http.Handle("/edit-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.EditCommentHandler)))
+	http.Handle("/delete-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.DeleteCommentHandler)))
+
+	http.Handle("/posts-by-category", handlers.AuthMiddleware(http.HandlerFunc(handlers.PostsByCategoryHandler)))
+
+	// Add this line after your other route definitions
+	http.HandleFunc("/404", handlers.NotFoundHandler)
+
+	// Add this with your other routes for testing 500 error
+	// run this on the browser to see the 500 error page: http://localhost:8080/test500
+	http.HandleFunc("/test500", func(w http.ResponseWriter, r *http.Request) {
+		handlers.RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("test 500 error"))
+	})
+
+	// Start the server
+	fmt.Println("Server starting at port localhost:8080")
+	http.ListenAndServe(":8080", nil)
 }

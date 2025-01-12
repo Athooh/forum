@@ -1,0 +1,43 @@
+{{define "signup"}}
+{{template "header" .}}
+<section class="signup-container">
+    {{if .Error}}
+    <div class="error-message">
+        <i class="fa-solid fa-circle-exclamation"></i>
+        {{.Error}}
+    </div>
+    {{end}}
+    <div class="title">
+        <i class="fa-solid fa-user-plus"></i>
+        <h2>Create your account</h2>
+        <p>Already have an account? <span><a href="/login"> Sign in</a></span></p>
+    </div>
+
+    <form action="/signup" method="POST" class="signup-form">
+        <div class="form-group">
+            <label for="email">Email address:</label>
+            <input type="text" id="email" name="email" required>
+        </div>
+        <div class="form-group">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <div class="password-input-container">
+                <input type="password" id="password" name="password" required>
+                <i class="fa-regular fa-eye-slash toggle-password" id="togglePassword"></i>
+            </div>
+            <!-- Progress Bar for password strength -->
+            <div id="strength-bar" class="strength-bar">
+                <div id="strength-meter" class="strength-meter"></div>
+            </div>
+            <div id="strength-text" class="strength-text">Weak</div>
+            <small class="password-hint">
+                Password must be at least 8 characters long and include uppercase, lowercase, a number, and a special character.
+            </small>
+        </div>
+        <button type="submit" class="btn-login">Create account</button>
+    </form>
+</section>
+{{end}}

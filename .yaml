@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./templates:/app/templates
+      - ./static:/app/static
+      - ./uploads:/app/uploads
+      - ./forum.db:/app/forum.db  # Mount the local database file
+      - sqlite-data:/app/data
+    environment:
+      - CGO_ENABLED=1
+      - GOOS=linux
+    labels:
+      maintainer: "obimbira60@gmail.com"
+      version: "1.0"
+      description: "Go application with SQLite"
+    
+    # Health check to ensure the application is running properly
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "http://localhost:8080"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+volumes:
+  sqlite-data:
+    driver: local

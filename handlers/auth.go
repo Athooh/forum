@@ -1,144 +1,174 @@
 package handlers
 
 import (
-	"database/sql"
-	"encoding/json"
-	"log"
-	"net/http"
-	"time"
-
+	"fmt"
 	"forum/database"
 	"forum/utils"
-
-	"golang.org/x/crypto/bcrypt"
+	"net/http"
+	"strings"
+	"time"
 )
 
-type User struct {
-	ID        int       `json:"id"`
-	Email     string    `json:"email"`
-	Username  string    `json:"username"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-}
-
-// Register a new user
-func RegisterHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
-	}
-
-	// Validate input
-	if user.Email == "" || user.Username == "" || user.Password == "" {
-		http.Error(w, "All fields are required", http.StatusBadRequest)
-		return
-	}
-
-	// Check if email or username already exists
-	var exists bool
-	err = database.DB.QueryRow("SELECT EXISTS (SELECT 1 FROM users WHERE email = ? OR username = ?)", user.Email, user.Username).Scan(&exists)
-	if err != nil {
-		log.Printf("Error checking user existence: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-	if exists {
-		http.Error(w, "Email or username already exists", http.StatusConflict)
-		return
-	}
-
-	// Hash the password
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
-	if err != nil {
-		log.Printf("Error hashing password: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	// Insert user into database
-	_, err = database.DB.Exec("INSERT INTO users (email, username, password) VALUES (?, ?, ?)", user.Email, user.Username, hashedPassword)
-	if err != nil {
-		log.Printf("Error inserting user: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("User registered successfully"))
-}
-
-// Login a user
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	fmt.Println("LoginHandler invoked")
+
+	if r.Method == http.MethodGet {
+		data := map[string]interface{}{
+			"Title": "Login - Forum",
+		}
+		templates.ExecuteTemplate(w, "login", data)
 		return
 	}
+	// List all available templates
+	// fmt.Println("Available templates:", templates.Templates())
+	if r.Method == http.MethodPost {
+		username := r.FormValue("username")
+		password := r.FormValue("password")
 
-	var user User
-	err := json.NewDecoder(r.Body).Decode(&user)
-	if err != nil {
-		http.Error(w, "Invalid input", http.StatusBadRequest)
-		return
+		if username == "" || password == "" {
+			RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("missing username or password"))
+			return
+		}
+
+		var id int
+		var hashedPassword string
+
+		query := `SELECT id, password FROM users WHERE username = ?`
+		err := database.DB.QueryRow(query, username).Scan(&id, &hashedPassword)
+		if err != nil {
+			data := map[string]interface{}{
+				"Title": "Login - Forum",
+				"Error": "Invalid username or password",
+			}
+			templates.ExecuteTemplate(w, "login", data)
+			return
+		}
+
+		err = utils.CheckPassword(hashedPassword, password)
+		if err != nil {
+			data := map[string]interface{}{
+				"Title": "Login - Forum",
+				"Error": "Invalid username or password",
+			}
+			templates.ExecuteTemplate(w, "login", data)
+			return
+		}
+
+		sessionToken, err := utils.GenerateSessionToken()
+		if err != nil {
+			RenderErrorPage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		expiresAt := time.Now().Add(24 * time.Hour)
+		query = `INSERT INTO sessions (user_id, session_token, expires_at) VALUES (?, ?, ?)`
+		_, err = database.DB.Exec(query, id, sessionToken, expiresAt)
+		if err != nil {
+			RenderErrorPage(w, http.StatusInternalServerError, err)
+			return
+		}
+
+		http.SetCookie(w, &http.Cookie{
+			Name:     "session_token",
+			Value:    sessionToken,
+			Expires:  expiresAt,
+			HttpOnly: true,
+		})
+
+		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 	}
-
-	// Validate input
-	if user.Email == "" || user.Password == "" {
-		http.Error(w, "Email and password are required", http.StatusBadRequest)
-		return
-	}
-
-	// Retrieve user from database
-	var storedUser User
-	err = database.DB.QueryRow("SELECT id, password FROM users WHERE email = ?", user.Email).Scan(&storedUser.ID, &storedUser.Password)
-	if err == sql.ErrNoRows {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-		return
-	} else if err != nil {
-		log.Printf("Error retrieving user: %v", err)
-		http.Error(w, "Internal server error", http.StatusInternalServerError)
-		return
-	}
-
-	// Compare passwords
-	err = bcrypt.CompareHashAndPassword([]byte(storedUser.Password), []byte(user.Password))
-	if err != nil {
-		http.Error(w, "Invalid email or password", http.StatusUnauthorized)
-		return
-	}
-
-	// Set session cookie
-	http.SetCookie(w, &http.Cookie{
-		Name:     "session_token",
-		Value:    utils.GenerateSessionToken(), // Replace with a UUID generator if needed
-		Expires:  time.Now().Add(24 * time.Hour),
-		HttpOnly: true,
-	})
-
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Login successful"))
 }
 
-// Logout a user
+func SignUpHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		data := map[string]interface{}{
+			"Title": "Signup - Forum",
+		}
+		templates.ExecuteTemplate(w, "signup", data)
+		return
+	}
+
+	if r.Method == http.MethodPost {
+		email := r.FormValue("email")
+		username := r.FormValue("username")
+		password := r.FormValue("password")
+
+		// Validate email format
+		if err := utils.ValidateEmail(email); err != nil {
+			data := map[string]interface{}{
+				"Title": "Signup - Forum",
+				"Error": err.Error(),
+			}
+			templates.ExecuteTemplate(w, "signup", data)
+			return
+		}
+
+		// Validate password strength
+		if err := utils.ValidatePasswordStrength(password); err != nil {
+			data := map[string]interface{}{
+				"Title": "Signup - Forum",
+				"Error": err.Error(),
+			}
+			templates.ExecuteTemplate(w, "signup", data)
+			return
+		}
+
+		hashedPassword, err := utils.HashPassword(password)
+		if err != nil {
+			data := map[string]interface{}{
+				"Title": "Signup - Forum",
+				"Error": "Internal server error",
+			}
+			templates.ExecuteTemplate(w, "signup", data)
+			return
+		}
+
+		query := `INSERT INTO users (email, username, password) VALUES (?, ?, ?)`
+		_, err = database.DB.Exec(query, email, username, hashedPassword)
+		if err != nil {
+			var errorMessage string
+			if strings.Contains(err.Error(), "UNIQUE constraint failed") {
+				if strings.Contains(err.Error(), "email") {
+					errorMessage = "This email is already registered"
+				} else {
+					errorMessage = "This username is already taken"
+				}
+			} else {
+				errorMessage = "An error occurred during registration"
+			}
+
+			data := map[string]interface{}{
+				"Title": "Signup - Forum",
+				"Error": errorMessage,
+			}
+			templates.ExecuteTemplate(w, "signup", data)
+			return
+		}
+
+		http.Redirect(w, r, "/login", http.StatusSeeOther)
+	}
+}
+
 func LogoutHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	cookie, err := r.Cookie("session_token")
+	if err != nil {
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+		return
+	}
+
+	query := `DELETE FROM sessions 	WHERE session_token = ?`
+	_, err = database.DB.Exec(query, cookie.Value)
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, err)
 		return
 	}
 
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    "",
-		Expires:  time.Now().Add(-1 * time.Hour),
+		Expires:  time.Now(),
 		HttpOnly: true,
 	})
 
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Logged out successfully"))
+	http.Redirect(w, r, "/", http.StatusSeeOther)
 }

@@ -342,8 +342,9 @@ header.header-container {
 
 .posts {
     width: 100%;
+    max-width: 730px;
     height: calc(100vh - 30px);
-    margin: 30px 0 0 0;
+    margin: 30px auto;
     padding: 0 20px;
     overflow-y: auto;
     scrollbar-width: none; /* Firefox */
@@ -364,16 +365,21 @@ header.header-container {
     font-size: 1.7rem;
     font-family: "poppins", sans-serif;
     font-weight: 550;
-    margin: 0;
+    margin: 0 auto;
     text-transform: capitalize;
+    max-width: 700px;
+}
+
+.posts p, .create-post {
+    max-width: 700px;
 }
 
 .post-footer h3 {
     font-size: 1rem;
 }
 
-.posts p:first-of-type {
-    margin: 0;
+.posts p:first-of-type, .create-post {
+    margin: 0 auto;
 }
 
 .post-card {
@@ -1086,19 +1092,21 @@ button.btn-submit:hover {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: calc(100vh - 80px);
+    min-height: calc(100vh - 300px);
     padding: 2rem;
-    background-color: #f5f5f5;
+    background-color: var(--primary-color);
+    
 }
 
 .error-container {
     text-align: center;
     padding: 3rem;
-    background: white;
+    background: var(--primary-color);
     border-radius: 12px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     max-width: 500px;
     width: 90%;
+    border: 1px solid var(--text-color);
 }
 
 .error-icon {
@@ -1107,11 +1115,11 @@ button.btn-submit:hover {
 }
 
 .error-icon i {
-    color: #4a5568;
+    color: var(--header-background);
 }
 
 .error-container h1 {
-    color: #2d3748;
+    color: var(--muted-text);
     margin-bottom: 1rem;
     font-size: 2rem;
 }
@@ -1127,7 +1135,7 @@ button.btn-submit:hover {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background-color: #4a5568;
+    background-color: var(--header-background);
     color: white;
     padding: 0.8rem 1.5rem;
     border-radius: 6px;
@@ -1339,5 +1347,271 @@ Announcements
 .announcement-date {
     font-size: 0.8rem;
     color: #888;
+}
+
+/* Media Query for Mobile Screens */
+@media (max-width: 840px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 800px;
+        padding-inline: 0;
+    }
+
+    .post-form input[type="text"],
+    .post-form select#category,
+    .post-form textarea,
+    .post-form input[type="file"],
+    .post-form button {
+        width: 100%;
+        max-width: 100%;
+        padding: 10px;
+        font-size: 1rem;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+    
+}
+
+@media (max-width: 768px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 95%;
+        padding-inline: 0;
+    }
+
+    .login-container, .signup-container {
+         border: 1px solid var(--text-color);
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container a, .signup-container a {
+        color: #0056b3;
+    }
+    
+     .form-group input {
+        border: none;
+        background-color: var(--muted-text);
+    }
+
+    .form-group input:active {
+        color: none;
+    }
+}
+
+@media (max-width: 430px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 410px;
+        padding-inline: 0;
+    }
+
+    .post-card {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 410px;
+    }
+
+    .login-container, .signup-container {
+        max-width: 400px;
+        margin: 100px auto 50px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container, .signup-container {
+        width: 85%;
+        max-width: 400px;
+        margin: 100px auto;
+        padding: 20px;
+        border: 1px solid var(--text-color);
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container .title h2, .signup-container .title h2 {
+        font-size: 1.3rem;
+    }
+
+    .login-container a, .signup-container a {
+        color: #0056b3;
+    }
+    
+    .form-group {
+        width: 99%;
+    }
+
+    .form-group input {
+        border: none;
+        background-color: var(--muted-text);
+    }
+
+    .form-group input:active {
+        color: none;
+    }
+
+    .error-container h1 {
+        color: var(--muted-text);
+        font-size: 1.4rem;
+    }
+    
+    .error-container p {
+        font-size: .9rem;
+    }
+}
+
+
+@media (max-width: 414px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 390px;
+        padding-inline: 0;
+    }
+
+    .post-card {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 390px;
+    }
+
+    .login-container, .signup-container {
+        width: 85%;
+        max-width: 370px;
+        margin: 100px auto;
+        padding: 20px;
+        border: 1px solid var(--text-color);
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container .title h2, .signup-container .title h2 {
+        font-size: 1.3rem;
+    }
+
+    .login-container a, .signup-container a {
+        color: #0056b3;
+    }
+    
+    .form-group {
+        width: 98%;
+    }
+
+    .form-group input {
+        border: none;
+        background-color: var(--muted-text);
+    }
+
+    .form-group input:active {
+        color: none;
+    }
+}
+
+@media (max-width: 375px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 350px;
+        padding-inline: 0;
+    }
+
+    .post-card {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 350px;
+    }
+
+    .login-container, .signup-container {
+        max-width: 300px;
+        margin: 50px auto;
+        padding: 20px;
+        border: 1px solid var(--text-color);
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container .title h2, .signup-container .title h2 {
+        font-size: 1.3rem;
+    }
+
+    .login-container a, .signup-container a {
+        color: #0056b3;
+    }
+    
+    .form-group {
+        width: 98%;
+    }
+
+    .form-group input {
+        border: none;
+        background-color: var(--muted-text);
+    }
+
+    .form-group input:active {
+        color: none;
+    }
 }
 

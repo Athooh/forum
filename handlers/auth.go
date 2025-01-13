@@ -2,11 +2,12 @@ package handlers
 
 import (
 	"fmt"
-	"forum/database"
-	"forum/utils"
 	"net/http"
 	"strings"
 	"time"
+
+	"forum/database"
+	"forum/utils"
 )
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
@@ -67,8 +68,8 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			// Active session found, delete the previous session
 			_, err = database.DB.Exec(`
 				DELETE FROM sessions
-				WHERE sessions_token = ?`,
-				sessionToken,
+				WHERE user_id = ?`,
+				id,
 			)
 			if err != nil {
 				RenderErrorPage(w, http.StatusInternalServerError, err)

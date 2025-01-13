@@ -56,8 +56,8 @@ header.header-container {
     padding-inline: 2rem;
     padding-block: 1rem;
     border-bottom: 1px solid rgba(211, 211, 211, 0.267);
-    /* box-shadow: 0px 4px 6px rgba(219, 219, 219, 0.1); */
 }
+
 .menu {
     display: flex;
     justify-content: space-between;
@@ -82,7 +82,6 @@ header.header-container {
     border-radius: 50px;
     padding: .8rem 1rem;
     border : none;
-    /* box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); Adds shadow on the bottom */
     background-color: #4a4a4a;
     font-size: 1rem;
     color: var(--muted-text);
@@ -93,8 +92,6 @@ header.header-container {
     right: 50px;
     font-size: 1.5rem;
     color: var(--muted-text);
-    /* margin-top: 15px;
-    margin-bottom: 10px; */
 }
 
 .authentication {
@@ -297,6 +294,7 @@ header.header-container {
     overflow: hidden;
 }
 
+
 .sidebar {
     /* width: 100%; */
     height: 100vh;
@@ -351,6 +349,10 @@ header.header-container {
     -ms-overflow-style: none; /* IE/Edge */
 }
 
+.posts label {
+    font-family: "poppins", sans-serif;
+}
+
 /* Hide WebKit scrollbar for posts */
 .posts::-webkit-scrollbar {
     display: none;
@@ -365,9 +367,9 @@ header.header-container {
     font-size: 1.7rem;
     font-family: "poppins", sans-serif;
     font-weight: 550;
-    margin: 0 auto;
     text-transform: capitalize;
     max-width: 700px;
+    padding-left: 20px;
 }
 
 .posts p, .create-post {
@@ -378,9 +380,62 @@ header.header-container {
     font-size: 1rem;
 }
 
-.posts p:first-of-type, .create-post {
+.posts p:first-child {
+    margin: 0;
+}
+
+.create-post {
     margin: 0 auto;
 }
+
+/* Post Form Styles */
+.post-form {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.post-form .form-group {
+    width: 100%;
+    max-width: 900px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+.post-form input[type="text"],
+.post-form select#category,
+.post-form textarea,
+.post-form input[type="file"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid rgba(211, 211, 211, 0.267);
+    border-radius: 5px;
+    background-color: #1f1f1f;
+    color: #E0E0E0;
+    box-sizing: border-box;
+}
+
+.post-form textarea {
+    min-height: 200px;
+    resize: vertical;
+    box-sizing: border-box;
+}
+
+.post-form .btn-submit {
+    width: 100%;
+    padding: 12px;
+    background-color: rgb(0, 156, 0);
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1rem;
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
 
 .post-card {
     width: 100%;
@@ -462,6 +517,7 @@ hr {
 
 .avatar-name p {
     margin-block: 0;
+    padding-left: 0;
 }
 
 .avatar-name .username {
@@ -544,11 +600,45 @@ hr {
 }
 
 .post-container {
+    width: 900px;
     height: calc(100vh - 80px); /* Adjust based on your header height */
     overflow-y: auto;
     padding: 20px;
     margin-left: 100px;
     /* position: relative; */
+}
+
+.view-post-container, .create-post-container, .edit-post-container {
+    display: grid;
+    grid-template-columns: 20% 80%;
+    gap: 0;
+    margin: 0;
+    padding: 0;
+    height: 100vh;
+    overflow: hidden;
+}
+
+.view-post-container .post-container {
+    width: 100%;
+    max-width: 1100px;
+    height: calc(100vh - 80px); /* Adjust based on your header height */
+    overflow-y: auto;
+    padding: 20px;
+    margin: 0 auto;
+}
+
+.create-post-container .posts, .edit-post-container .posts {
+    width: 100%;
+    max-width: 900px;
+    height: calc(100vh - 80px); /* Adjust based on your header height */
+    overflow-y: auto;
+    padding: 20px;
+    margin: 0 auto;
+    box-sizing: border-box;
+}
+
+.view-post-container .post-header h3 {
+    padding-left: 0;
 }
 
 .post-footer {
@@ -621,88 +711,14 @@ a .dropdown-item{
     color: #ff4444;
 }
 
-.comment-form {
-    bottom: 0;
-    background: white;
-    padding-bottom: 20px;
-}
-
-/* Edit Post */
-
-.posts .form-group {
-    display: flex;
-    /* align-items: center; */
-    flex-direction: column;
-    width: 70%;
-    font-family: 'poppins', sans-serif;
-    margin-block: 30px;
-}
-
-
-.posts label {
-    align-items: start;
-    color: #6c757d;
-} 
-
-.form-group input {
-    width: 95%;
-    /* margin: auto; */
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-.form-group textarea {
-    width: 98%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    min-height: 100px;
-}
-
-.form-group #title, .form-group #content, .form-group #category {
-    color: #6c757d;
-}
-
-#category {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    background-color: #fff;
-}
-
-.form-group #title {
-    text-transform: capitalize;
-}
-
-button.btn-submit {
-    padding: 10px;
-    background-color: #45a049;
-    color: #fff;
-    border-radius: 20px;
-    border: none;
-}
-
-button.btn-submit:hover {
-    background-color: #4caf50;
-}
-
 .post {
     max-height: 700px;
-    /* background-color: var(--primary-color); */
-    /* border: 1px solid #e0e0e0; */
-    /* padding: 15px; */
-    /* margin-bottom: 20px; */
     border-radius: 8px;
     transition: box-shadow 0.3s ease;
     cursor: pointer;
 }
 
 
-/* .post:hover {
-    background: rgba(87, 87, 87, 0.1);
-} */
 
 .post a h4 {
     text-transform: capitalize;
@@ -740,18 +756,11 @@ button.btn-submit:hover {
 }
 
 .post-content p {
+    width: 100%;
     max-width: 1000px;
     margin: 20px 0;
 }
 
-.post-image-full {
-    width: 100%;
-    height: 500px;
-    object-fit: cover;
-    margin: 20px 0;
-    border-radius: 8px;
-    border: 1px solid rgba(211, 211, 211, 0.267);
-}
 
 /* image upload styling */
 .post-image-preview {
@@ -767,9 +776,9 @@ button.btn-submit:hover {
     width: 100%;
     max-height: 500px;
     object-fit: cover;
-    margin-top: 20px;
     border-radius: 8px;
-    margin-left: 0;
+    margin: 0;
+    border: 1px solid rgba(211, 211, 211, 0.267);
 }
 /* email validation */
 .email-error {
@@ -779,13 +788,6 @@ button.btn-submit:hover {
     font-family: "poppins", sans-serif;
 }
 
-.form-group input:invalid {
-    border-color: #ff4444;
-}
-
-.form-group input:valid {
-    border-color: #4CAF50;
-}
 
 .error-message {
     background-color: #ffebee;
@@ -819,43 +821,6 @@ button.btn-submit:hover {
         opacity: 1;
         transform: translateY(0);
     }
-}
-
-/* hidden comment form */
-
-.quick-comment-form {
-    margin-top: 15px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-radius: 5px;
-}
-
-.quick-comment-form textarea {
-    width: 100%;
-    min-height: 60px;
-    padding: 8px;
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    resize: vertical;
-}
-
-.btn-submit-comment {
-    background-color: var(--header-background);
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
-}
-
-.btn-submit-comment:hover {
-    background-color: #7c3aed;
-}
-
-.btn-comment {
-    cursor: pointer;
 }
 
 /* Guest Permission */
@@ -944,31 +909,43 @@ button.btn-submit:hover {
 
 /* Comments Section Styles */
 .comments-section {
+    width: 100%;
     max-width: 950px;
     margin: 30px 0;
+    box-sizing: border-box;
+}
+
+.comments-section p {
+    margin-left: 0;
 }
 
 .comments-section h3 {
     margin-bottom: 20px;
     color: #333;
+    margin-left: 0;
 }
 
 .comment-form {
-    background-color: #f8f9fa;
+    width: 100%;
+    background-color: var(--primary-color);
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 30px;
+    border: 1px solid rgba(211, 211, 211, 0.267);
 }
 
 .comment-form textarea {
     width: 100%;
     min-height: 100px;
     padding: 12px;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(211, 211, 211, 0.267);
+    color: var(--muted-text);
     border-radius: 4px;
     margin-bottom: 15px;
     resize: vertical;
     font-family: inherit;
+    box-sizing: border-box;
+    background-color: var(--primary-color);
 }
 
 .btn-submit-comment {
@@ -986,15 +963,26 @@ button.btn-submit:hover {
 }
 
 .comments-list {
+    width: 100%;
     margin-top: 20px;
 }
 
 .comment {
-    background-color: white;
+    width: 100%;
+    background-color: var(--secondary-color);
     padding: 20px;
     border-radius: 8px;
     margin-bottom: 15px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.comment p {
+    color: #E0E0E0;
+    margin-left: 0;
+}
+
+.comment i, .comment .username, .comm {
+    color: var(--primary-color);
 }
 
 .comment-header {
@@ -1011,22 +999,27 @@ button.btn-submit:hover {
 }
 
 .comment-user i {
-    color: #666;
+    color: var(--primary-color);
 }
 
 .username {
     font-weight: 600;
     color: #636363;
+    padding-left: 0;
 }
 
 .comment-time {
     font-size: 0.85rem;
-    color: #666;
+    color: #E0E0E0;
 }
 
 .comment-content {
     color: #444;
     line-height: 1.5;
+}
+
+.comment-content p {
+    margin-left: 0;
 }
 
 .comment-actions {
@@ -1351,7 +1344,7 @@ Announcements
 
 /* Media Query for Mobile Screens */
 @media (max-width: 840px) {
-    .dash-container {
+    .dash-container, .create-post-container, .edit-post-container, .view-post-container {
         grid-template-columns: 1fr; /* Only the posts section is visible */
     }
 
@@ -1367,22 +1360,36 @@ Announcements
         margin: 0 auto;
         width: 100%;
         max-width: 800px;
-        padding-inline: 0;
+        padding: 0 10px;
+        box-sizing: border-box;
+        overflow-x: hidden;
     }
 
-    .post-form input[type="text"],
-    .post-form select#category,
-    .post-form textarea,
-    .post-form input[type="file"],
-    .post-form button {
-        width: 100%;
-        max-width: 100%;
+    .post-form {
+        width: 95%;
         padding: 10px;
-        font-size: 1rem;
-        border: 1px solid #ccc;
-        border-radius: 5px;
     }
     
+    .posts .form-group {
+        width: 100%;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100% !important;
+    }
+
+    .post-container {
+        width: 95%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0 10px;
+    }
+    
+    .comments-section .comment-form, .comment {
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1513,11 +1520,15 @@ Announcements
         display: none; /* Hide search bar */
     }
 
-    .posts {
+    .posts, .create-post-container .posts {
         margin: 0 auto;
         width: 95%;
         max-width: 390px;
         padding-inline: 0;
+    }
+    
+    .dash-container .posts h3 {
+        padding-left: 0;
     }
 
     .post-card {
@@ -1614,4 +1625,5 @@ Announcements
         color: none;
     }
 }
+
 

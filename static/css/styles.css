@@ -1390,6 +1390,11 @@ Announcements
     .comments-section .comment-form, .comment {
         box-sizing: border-box;
     }
+
+    input#username, input#password, input#email, button.btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1556,7 +1561,7 @@ Announcements
     }
     
     .form-group {
-        width: 98%;
+        width: 100%;
     }
 
     .form-group input {

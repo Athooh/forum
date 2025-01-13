@@ -143,4 +143,4 @@ go test ./...
 
 ## License
 
-The project is licensed under the [MIT License](#LICENSE).
+The project is licensed under the [LICENSE](LICENSE).

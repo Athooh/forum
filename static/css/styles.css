@@ -326,7 +326,7 @@ header.header-container {
 } 
 
 .sidebar-links a:hover, .side-categoies a:hover {
-    background: #f4ceff;
+    background: #1f1f1f;
     color: var(--header-background);
     padding: 3px 5px;
     border-radius: 4px;
@@ -478,7 +478,7 @@ hr {
 }
 
 .reaction i:hover {
-    color: #8b5cf6;
+    color: var(--header-background);
     cursor: pointer;
 }
 
@@ -1180,7 +1180,7 @@ hr {
     background: rgba(211, 211, 211, 0.267);
 }
 
-/* .right-sidebar::-webkit-scrollbar {
+.right-sidebar::-webkit-scrollbar {
     width: 6px;
 }
 
@@ -1188,14 +1188,7 @@ hr {
     background-color: rgba(255, 255, 255, 0.1);
     border-radius: 3px;
 }
-
-.sidebar-section {
-    background-color: var(--primary-color);
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-}
-
+ 
 .sidebar-section h3 {
     font-size: 1rem;
     margin-bottom: 15px;
@@ -1205,7 +1198,11 @@ hr {
     gap: 8px;
 }
 
-/* Trending Topics 
+.sidebar-section:last-child {
+    margin-bottom: 7rem;
+} 
+
+Trending Topics 
 .trending-topics .topic {
     display: flex;
     align-items: center;
@@ -1214,6 +1211,8 @@ hr {
     border-radius: 4px;
     margin-bottom: 8px;
     border: 1px solid rgba(211, 211, 211, 0.267);
+    color: var(--text-color);
+    font-family: "poppins", sans-serif;
 }
 
 .topic-rank {
@@ -1231,7 +1230,7 @@ hr {
     color: #888;
 }
 
-/* Activity Feed 
+Activity Feed 
 .activity-item {
     display: flex;
     gap: 10px;
@@ -1245,12 +1244,16 @@ hr {
     margin: 0;
 }
 
+.activity-content a {
+    color: #007bff;
+}
+
 .activity-time {
     font-size: 0.8rem;
     color: #888;
 }
-
-/* Featured Users 
+/*
+Featured Users 
 .user-card {
     display: flex;
     align-items: center;
@@ -1271,14 +1274,13 @@ hr {
     font-size: 0.8rem;
     color: #888;
 }
-
-/* Stats Grid 
+*/
+Stats Grid 
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
-
 .stat-item {
     text-align: center;
     padding: 10px;
@@ -1298,7 +1300,7 @@ hr {
     color: #888;
 }
 
-/* Social Links 
+Social Links 
 .social-links {
     display: flex;
     justify-content: center;
@@ -1315,7 +1317,7 @@ hr {
     color: var(--header-background);
 }
 
-/* Announcements 
+Announcements 
 .announcement {
     padding: 10px;
     border-radius: 4px;
@@ -1338,4 +1340,4 @@ hr {
     font-size: 0.8rem;
     color: #888;
 }
- */
+

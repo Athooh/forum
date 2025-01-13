@@ -54,7 +54,30 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionToken, err := utils.GenerateSessionToken()
+		// Check if the user already has an active session
+		var sessionToken string
+		err = database.DB.QueryRow(`
+			SELECT session_token
+			FROM sessions
+			WHERE user_id = ? AND expires_at > ?`,
+			id, time.Now(),
+		).Scan(&sessionToken)
+
+		if err == nil {
+			// Active session found, delete the previous session
+			_, err = database.DB.Exec(`
+				DELETE FROM sessions
+				WHERE sessions_token = ?`,
+				sessionToken,
+			)
+			if err != nil {
+				RenderErrorPage(w, http.StatusInternalServerError, err)
+				return
+			}
+		}
+
+		// Generate a new session token
+		sessionToken, err = utils.GenerateSessionToken()
 		if err != nil {
 			RenderErrorPage(w, http.StatusInternalServerError, err)
 			return

@@ -88,6 +88,27 @@
                             <div class="comment-content">
                                 <p>{{.Content}}</p>
                             </div>
+                            <div class="comment-reactions">
+                                {{if $.IsAuthenticated}}
+                                    <i class="btn-comment-like" data-id="{{.ID}}">
+                                        <i class="fa-regular fa-thumbs-up"></i> 
+                                        <span>{{.Likes}}</span>
+                                    </i>
+                                    <i class="btn-comment-dislike" data-id="{{.ID}}">
+                                        <i class="fa-regular fa-thumbs-down"></i> 
+                                        <span>{{.Dislikes}}</span>
+                                    </i>
+                                {{else}}
+                                    <div class="guest-comment-reaction">
+                                        <a href="/login" class="reaction-link">
+                                            <i class="fa-regular fa-thumbs-up"></i> 
+                                            <span>{{.Likes}}</span>
+                                            <i class="fa-regular fa-thumbs-down"></i> 
+                                            <span>{{.Dislikes}}</span>
+                                        </a>
+                                    </div>
+                                {{end}}
+                            </div>
                             {{if and $.IsAuthenticated (eq .UserID $.UserID)}}
                             <div class="comment-actions">
                                 <button class="btn-edit-comment" data-id="{{.ID}}">Edit</button>

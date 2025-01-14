@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"forum/database"
 )
@@ -30,7 +31,16 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.AddComment(postID, userID, content)
+	username, err := database.GetUsernameByID(userID)
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to get username: %v", err))
+		return
+	}
+
+	_, err = database.DB.Exec(`
+		INSERT INTO comments (post_id, user_id, username, content, created_at, likes, dislikes)
+		VALUES (?, ?, ?, ?, ?, 0, 0)
+	`, postID, userID, username, content, time.Now())
 	if err != nil {
 		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to add comment: %v", err))
 		return
@@ -115,4 +125,52 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Return success response for AJAX requests
 	w.WriteHeader(http.StatusOK)
+}
+
+// LikeCommentHandler handles liking a comment
+func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(userIDKey).(int)
+	commentIDStr := r.URL.Query().Get("id")
+
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("invalid Comment ID: %v", err))
+		return
+	}
+
+	err = database.ToggleCommentReaction(userID, commentID, "like")
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to like comment: %v", err))
+		return
+	}
+
+	// Return updated reaction counts
+	likes, dislikes, _ := database.GetCommentReactionCounts(commentID)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf(`{"likes": %d, "dislikes": %d}`, likes, dislikes)))
+}
+
+// DislikeCommentHandler handles disliking a comment
+func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(userIDKey).(int)
+	commentIDStr := r.URL.Query().Get("id")
+
+	commentID, err := strconv.Atoi(commentIDStr)
+	if err != nil {
+		RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("invalid Comment ID: %v", err))
+		return
+	}
+
+	err = database.ToggleCommentReaction(userID, commentID, "dislike")
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to dislike comment: %v", err))
+		return
+	}
+
+	// Return updated reaction counts
+	likes, dislikes, _ := database.GetCommentReactionCounts(commentID)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(fmt.Sprintf(`{"likes": %d, "dislikes": %d}`, likes, dislikes)))
 }

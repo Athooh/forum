@@ -7,11 +7,12 @@
             <a href="#"><i class="fa-solid fa-spinner"></i>&emsp;Trending</a>
             <a href="#"><i class="fa-regular fa-clock"></i>&emsp;Latest</a>
             <a href="#"><i class="fa-regular fa-star"></i>&emsp;Top</a>
+            <a href="#"><i class="fa-solid fa-chart-line"></i>&emsp;My Activities</a>
         </div>
         <h3>Categories</h3>
         <div class="side-categoies">
             {{range $category, $count := .Categories}}
-                <a href="#"><i class="fa-solid fa-laptop-code"></i>&emsp;{{$category}}<span>{{$count}}</span></a>
+                <a href="#"><i class="fa-solid fa-laptop-code"></i>&emsp;{{$category}}<span>[ {{$count}} ]</span></a>
             {{end}}
         </div>
     </div>

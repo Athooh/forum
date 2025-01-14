@@ -482,6 +482,23 @@ hr {
     cursor: pointer;
 }
 
+.comment-reactions {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-top: 1.5rem;
+}
+
+.comment-reactions i{
+    color: #000000;
+    font-size: .8rem;
+}
+
+.comment-reactions i:hover {
+    color: var(--header-background);
+    cursor: pointer;
+}
+
 
 /* Button Styles */
 .btn-create-post {

@@ -36,6 +36,8 @@ type Comment struct {
 	Content        string
 	CreatedAt      time.Time
 	Username       string // Add this field to store the comment author's username
+	Likes          int
+	Dislikes       int
 	CreatedAtHuman string // Human-readable time difference
 }
 
@@ -152,6 +154,24 @@ func createTables() {
 	_, err = DB.Exec(reactionTable)
 	if err != nil {
 		log.Fatalf("Failed to create post_reactions table: %v\n", err)
+	}
+
+	commentReactionTable := `
+	CREATE TABLE IF NOT EXISTS comment_reactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    comment_id INTEGER NOT NULL,
+    post_id INTEGER NOT NULL,
+    reaction TEXT CHECK(reaction IN ('like', 'dislike')) NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (comment_id) REFERENCES comments (id),
+    FOREIGN KEY (post_id) REFERENCES posts (id),
+    UNIQUE(user_id, comment_id)
+	);`
+	_, err = DB.Exec(commentReactionTable)
+	if err != nil {
+		log.Fatalf("Failed to create comment_reactions table: %v\n", err)
 	}
 
 }
@@ -421,6 +441,62 @@ func GetReactionCounts(postID int) (int, int, error) {
 
 	dislikeQuery := `SELECT COUNT(*) FROM post_reactions WHERE post_id = ? AND reaction = 'dislike'`
 	err = DB.QueryRow(dislikeQuery, postID).Scan(&dislikes)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return likes, dislikes, nil
+}
+
+// ToggleCommentReaction toggles a like or dislike reaction on a comment.
+func ToggleCommentReaction(userID, commentID int, reaction string) error {
+    // First, get the post_id from the comment
+    var postID int
+    err := DB.QueryRow(`SELECT post_id FROM comments WHERE id = ?`, commentID).Scan(&postID)
+    if err != nil {
+        return fmt.Errorf("failed to get post_id for comment: %v", err)
+    }
+
+    var existingReaction string
+    // Check if a reaction already exists
+    query := `SELECT reaction FROM comment_reactions WHERE user_id = ? AND comment_id = ?`
+    err = DB.QueryRow(query, userID, commentID).Scan(&existingReaction)
+
+    if err == sql.ErrNoRows {
+        // No existing reaction, insert a new one
+        insertQuery := `INSERT INTO comment_reactions (user_id, comment_id, post_id, reaction) 
+                       VALUES (?, ?, ?, ?)`
+        _, err := DB.Exec(insertQuery, userID, commentID, postID, reaction)
+        return err
+    } else if err != nil {
+        return err
+    }
+
+    if existingReaction == reaction {
+        // If the reaction is the same, remove it (toggle off)
+        deleteQuery := `DELETE FROM comment_reactions WHERE user_id = ? AND comment_id = ?`
+        _, err := DB.Exec(deleteQuery, userID, commentID)
+        return err
+    }
+
+    // If the reaction is different, update it
+    updateQuery := `UPDATE comment_reactions SET reaction = ? WHERE user_id = ? AND comment_id = ?`
+    _, err = DB.Exec(updateQuery, reaction, userID, commentID)
+    return err
+}
+
+// GetCommentReactionCounts returns the number of likes and dislikes for a comment.
+func GetCommentReactionCounts(commentID int) (int, int, error) {
+	var likes, dislikes int
+
+	likeQuery := `SELECT COUNT(*) FROM comment_reactions WHERE comment_id = ? AND reaction = 'like'`
+	err := DB.QueryRow(likeQuery, commentID).Scan(&likes)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	dislikeQuery := `SELECT COUNT(*) FROM comment_reactions WHERE comment_id = ? AND reaction = 'dislike'`
+	err = DB.QueryRow(dislikeQuery, commentID).Scan(&dislikes)
 	if err != nil {
 		return 0, 0, err
 	}

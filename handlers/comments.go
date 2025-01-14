@@ -117,7 +117,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 }
 
-// LikeCommentHandler handles liking a comment.
+// LikeCommentHandler handles liking a comment by an authenticated user
 func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 	userID := r.Context().Value(userIDKey).(int)
 	commentIDStr := r.URL.Query().Get("id")
@@ -128,14 +128,15 @@ func LikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.ToggleReaction(userID, commentID, "like")
+	err = database.ToggleCommentReaction(userID, commentID, "like")
 	if err != nil {
 		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to like comment: %v", err))
 		return
 	}
 
-	// Return updated reaction counts
-	likes, dislikes, _ := database.GetReactionCounts(commentID)
+	likes, dislikes, _ := database.GetCommentReactionCounts(commentID)
+
+	// Set response headers and send the JSON response with updated counts
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`{"likes": %d, "dislikes": %d}`, likes, dislikes)))
@@ -152,14 +153,14 @@ func DislikeCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = database.ToggleReaction(userID, commentID, "dislike")
+	err = database.ToggleCommentReaction(userID, commentID, "dislike")
 	if err != nil {
-		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to dislike post: %v", err))
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to dislike comment: %v", err))
 		return
 	}
 
 	// Return updated reaction counts
-	likes, dislikes, _ := database.GetReactionCounts(commentID)
+	likes, dislikes, _ := database.GetCommentReactionCounts(commentID)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`{"likes": %d, "dislikes": %d}`, likes, dislikes)))

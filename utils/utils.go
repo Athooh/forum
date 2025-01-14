@@ -8,7 +8,7 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/google/uuid"
+	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -28,8 +28,9 @@ func CheckPassword(hashedPassword, password string) error {
 
 // GenerateSessionToken creates a unique session token using UUID.
 func GenerateSessionToken() (string, error) {
-	token := uuid.New().String()
-	return token, nil
+	token, err := uuid.NewV4()
+	fmt.Println(token.String())
+	return token.String(), err
 }
 
 // ValidatePasswordStrength checks if a password is strong enough.

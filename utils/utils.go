@@ -29,7 +29,6 @@ func CheckPassword(hashedPassword, password string) error {
 // GenerateSessionToken creates a unique session token using UUID.
 func GenerateSessionToken() (string, error) {
 	token, err := uuid.NewV4()
-	fmt.Println(token.String())
 	return token.String(), err
 }
 

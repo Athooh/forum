@@ -411,7 +411,7 @@ header.header-container {
 
 /* Add margin to the last post-card */
 .posts .post-card:last-child {
-    margin-bottom: 4rem; /* Ensure extra space at the bottom */
+    margin-bottom: 5rem; /* Ensure extra space at the bottom */
 }
 
 .posts h3 {
@@ -1065,8 +1065,9 @@ a .dropdown-item{
 }
 
 .comment-content {
-    color: #444;
+    color: #E0E0E0;
     line-height: 1.5;
+    font-family: "poppins", sans-serif;
 }
 
 .comment-content p {

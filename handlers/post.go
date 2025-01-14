@@ -261,7 +261,7 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 
 	// Add username and time ago for each comment
 	for i := range comments {
-		comments[i].Username = getUsername(comments[i].UserID)
+		comments[i].Username = getUsername(int(comments[i].UserID))
 		comments[i].CreatedAtHuman = utils.TimeAgo(comments[i].CreatedAt)
 	}
 

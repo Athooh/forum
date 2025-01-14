@@ -30,15 +30,15 @@ type Post struct {
 }
 
 type Comment struct {
-	ID             int
-	PostID         int
-	UserID         int
-	Content        string
-	CreatedAt      time.Time
-	Username       string // Add this field to store the comment author's username
-	CreatedAtHuman string // Human-readable time difference
-	Likes          int    `json:"likes"`
-	Dislikes       int    `json:"dislikes"`
+	ID             int64     `json:"id"`
+	PostID         int64     `json:"post_id"`
+	UserID         int64     `json:"user_id"`
+	Username       string    `json:"username"`
+	Content        string    `json:"content"`
+	CreatedAt      time.Time `json:"created_at"`
+	CreatedAtHuman string    `json:"created_at_human"`
+	Likes          int       `json:"likes"`
+	Dislikes       int       `json:"dislikes"`
 }
 
 var DB *sql.DB
@@ -102,14 +102,15 @@ func createTables() {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         post_id INTEGER NOT NULL,
         user_id INTEGER NOT NULL,
+        username TEXT NOT NULL,
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (post_id) REFERENCES posts (id),
         FOREIGN KEY (user_id) REFERENCES users (id)
     );`
-	_, tableErr := DB.Exec(commentTable)
-	if tableErr != nil {
-		log.Fatalf("Failed to create comments table: %v\n", tableErr)
+	_, err = DB.Exec(commentTable)
+	if err != nil {
+		log.Fatalf("Failed to create comments table: %v\n", err)
 	}
 
 	categoryTable := `
@@ -173,9 +174,9 @@ func createTables() {
 }
 
 // AddComment inserts a new comment into the database.
-func AddComment(postID, userID int, content string) error {
-	query := `INSERT INTO comments (post_id, user_id, content) VALUES (?, ?, ?)`
-	_, err := DB.Exec(query, postID, userID, content)
+func AddComment(postID, userID int, username, content string) error {
+	query := `INSERT INTO comments (post_id, user_id, username, content, created_at) VALUES (?, ?, ?, ?, ?)`
+	_, err := DB.Exec(query, postID, userID, username, content, time.Now())
 	return err
 }
 

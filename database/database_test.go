@@ -52,7 +52,7 @@ func TestCategorySeed(t *testing.T) {
 func TestAddComment(t *testing.T) {
 	InitDB()
 
-	err := AddComment(1, 1, "This is a test comment")
+	err := AddComment(1, 1, "testuser", "This is a test comment")
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"forum/database"
 )
@@ -37,10 +36,7 @@ func AddCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = database.DB.Exec(`
-		INSERT INTO comments (post_id, user_id, username, content, created_at, likes, dislikes)
-		VALUES (?, ?, ?, ?, ?, 0, 0)
-	`, postID, userID, username, content, time.Now())
+	err = database.AddComment(postID, userID, username, content)
 	if err != nil {
 		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to add comment: %v", err))
 		return
@@ -70,7 +66,7 @@ func EditCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if comment.UserID != userID {
+	if int64(userID) != comment.UserID {
 		RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
 		return
 	}
@@ -112,7 +108,7 @@ func DeleteCommentHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if comment.UserID != userID {
+	if int64(userID) != comment.UserID {
 		RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
 		return
 	}

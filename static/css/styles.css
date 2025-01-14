@@ -312,6 +312,10 @@ header.header-container {
     padding-left: 2rem;
 }
 
+.side-categoies i, .sidebar-links i {
+    font-size: 700;
+    color: #E0E0E0;
+}
 
 .sidebar-links a, .side-categoies a{
     color: var(--secondary-color);
@@ -321,6 +325,8 @@ header.header-container {
 
 .side-categoies a span {
     float: right;
+    color: var(--header-background);
+    font-weight: 700;
 } 
 
 .sidebar-links a:hover, .side-categoies a:hover {

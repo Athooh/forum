@@ -68,6 +68,7 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		file, header, err := r.FormFile("image")
 		if err == nil && header != nil {
 			defer file.Close()
+
 			imagePath := fmt.Sprintf("uploads/%d_%s", time.Now().Unix(), header.Filename)
 			dst, err := os.Create(imagePath)
 			if err != nil {
@@ -83,7 +84,24 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save image: %v", err))
 				return
 			}
-			imageURL = "/" + imagePath
+
+			// Compress and resize the image
+			compressedImagePath := fmt.Sprintf("uploads/compressed_%d_%s", time.Now().Unix(), header.Filename)
+			err = utils.CompressAndResizeImage(imagePath, compressedImagePath, 900, 700, 80) // Max width 900px, height 700px, quality 85
+			if err != nil {
+				log.Printf("Failed to compress image: %v", err)
+				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to compress image: %v", err))
+				return
+			}
+
+			// Remove the original uncompressed image
+			err = os.Remove(imagePath)
+			if err != nil {
+				log.Printf("Failed to delete original image: %v", err)
+			}
+
+			imageURL = "/" + compressedImagePath
+
 		} else if err != http.ErrMissingFile {
 			log.Printf("Error retrieving file: %v", err)
 			RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save file: %v", err))

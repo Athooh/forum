@@ -8,3 +8,5 @@ require (
 	github.com/gofrs/uuid v4.4.0+incompatible
 	golang.org/x/crypto v0.29.0
 )
+
+require golang.org/x/image v0.23.0 // indirect

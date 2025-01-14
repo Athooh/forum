@@ -3,6 +3,9 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"image"
+	"image/jpeg"
+	"os"
 	"regexp"
 	"strings"
 	"time"
@@ -10,6 +13,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
+	"golang.org/x/image/draw"
 )
 
 // HashPassword hashes a plain text password using bcrypt.
@@ -134,4 +138,65 @@ func TruncateContent(content string, wordLimit int) string {
 		return strings.Join(words[:wordLimit], " ") + "..."
 	}
 	return content
+}
+
+// CompressAndResizeImage resizes and compresses an image to the specified dimensions and quality.
+func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, quality int) error {
+	// Open the input file
+	file, err := os.Open(inputPath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	// Decode the image
+	img, _, err := image.Decode(file)
+	if err != nil {
+		return err
+	}
+
+	// Get the original dimensions
+	bounds := img.Bounds()
+	width := bounds.Dx()
+	height := bounds.Dy()
+
+	// Calculate the new dimensions while maintaining the aspect ratio
+	newWidth, newHeight := width, height
+	if width > maxWidth || height > maxHeight {
+		ratioX := float64(maxWidth) / float64(width)
+		ratioY := float64(maxHeight) / float64(height)
+		ratio := min(ratioX, ratioY)
+
+		newWidth = int(float64(width) * ratio)
+		newHeight = int(float64(height) * ratio)
+	}
+
+	// Create a new blank image with the new dimensions
+	resizedImg := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
+
+	// Resize the original image into the new image
+	draw.ApproxBiLinear.Scale(resizedImg, resizedImg.Bounds(), img, bounds, draw.Over, nil)
+
+	// Create the output file
+	outFile, err := os.Create(outputPath)
+	if err != nil {
+		return err
+	}
+	defer outFile.Close()
+
+	// Encode the image as JPEG with the specified quality
+	err = jpeg.Encode(outFile, resizedImg, &jpeg.Options{Quality: quality})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// min returns the smaller of two float64 numbers
+func min(a, b float64) float64 {
+	if a < b {
+		return a
+	}
+	return b
 }

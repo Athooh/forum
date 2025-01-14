@@ -1343,6 +1343,70 @@ Announcements
 }
 
 /* Media Query for Mobile Screens */
+@media (max-width: 920px) {
+    .dash-container, .create-post-container, .edit-post-container, .view-post-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 850px;
+        padding: 0 10px;
+        box-sizing: border-box;
+        overflow-x: hidden;
+    }
+
+    .dash-container .posts h3 {
+        padding-left: 0;
+        margin: 10px auto;
+    }
+/* 
+    .create-post-container posts h3, .edit-post-container posts h3 {
+        margin: 10px 0;
+    } */
+
+    .post-form {
+        width: 100%;
+        padding: 10px;
+    }
+    
+    .posts .form-group {
+        width: 100%;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        width: 100% !important;
+    }
+
+    .post-container {
+        width: 95%;
+        max-width: 100%;
+        box-sizing: border-box;
+        padding: 0 10px;
+    }
+    
+    .comments-section .comment-form, .comment {
+        box-sizing: border-box;
+    }
+
+    input#username, input#password, input#email, button.btn {
+        width: 100%;
+        box-sizing: border-box;
+    }
+}
+
+
 @media (max-width: 840px) {
     .dash-container, .create-post-container, .edit-post-container, .view-post-container {
         grid-template-columns: 1fr; /* Only the posts section is visible */
@@ -1435,6 +1499,77 @@ Announcements
     }
 }
 
+@media (max-width: 540px) {
+    .dash-container {
+        grid-template-columns: 1fr; /* Only the posts section is visible */
+    }
+
+    .sidebar, .right-sidebar {
+        display: none; /* Hide sidebars */
+    }
+
+    .search-bar {
+        display: none; /* Hide search bar */
+    }
+
+    .posts {
+        margin: 0 auto;
+        width: 100%;
+        max-width: 490px;
+        padding-inline: 0;
+    }
+
+    .posts h3 {
+        padding-left: 0;
+    }
+
+    .post-card {
+        margin: 0 auto;
+        width: 95%;
+        max-width: 490px;
+    }
+
+    .login-container, .signup-container {
+        width: 85%;
+        max-width: 450px;
+        margin: 100px auto;
+        padding: 20px;
+        border: 1px solid var(--text-color);
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container .title h2, .signup-container .title h2 {
+        font-size: 1.3rem;
+    }
+
+    .login-container a, .signup-container a {
+        color: #0056b3;
+    }
+    
+    .form-group {
+        width: 99%;
+    }
+
+    .form-group input {
+        border: none;
+        background-color: var(--muted-text);
+    }
+
+    .form-group input:active {
+        color: none;
+    }
+
+    .error-container h1 {
+        color: var(--muted-text);
+        font-size: 1.4rem;
+    }
+    
+    .error-container p {
+        font-size: .9rem;
+    }
+}
+
 @media (max-width: 430px) {
     .dash-container {
         grid-template-columns: 1fr; /* Only the posts section is visible */
@@ -1461,14 +1596,6 @@ Announcements
         max-width: 410px;
     }
 
-    .login-container, .signup-container {
-        max-width: 400px;
-        margin: 100px auto 50px;
-        padding: 20px;
-        border: 1px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
 
     .login-container, .signup-container {
         width: 85%;

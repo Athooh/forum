@@ -1510,6 +1510,10 @@ Announcements
         padding-left: 0;
         margin: 10px auto;
     }
+
+    header.header-container {
+        padding-inline: 1rem;
+    }
 /* 
     .create-post-container posts h3, .edit-post-container posts h3 {
         margin: 10px 0;

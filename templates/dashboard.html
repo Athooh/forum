@@ -9,6 +9,17 @@
             <a href="#"><i class="fa-regular fa-star"></i>&emsp;Top</a>
             <a href="#"><i class="fa-solid fa-chart-line"></i>&emsp;My Activities</a>
         </div>
+
+        <!-- start test -->
+
+        {{ if .IsLoggedIn }}
+        <h3>Posts Created</h3>
+        <div class="side-categoies">
+            <a href="/user-posts" class="btn-user-posts">View My Posts</a>
+        </div>
+        {{ end }}
+        <!-- end test -->
+
         <h3>Categories</h3>
         <div class="side-categoies">
             {{range $category, $count := .Categories}}

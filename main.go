@@ -55,6 +55,7 @@ func main() {
 	http.Handle("/delete-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.DeleteCommentHandler)))
 
 	http.Handle("/posts-by-category", handlers.AuthMiddleware(http.HandlerFunc(handlers.PostsByCategoryHandler)))
+	http.Handle("/user-posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.UserPostHandler)))
 
 	// Add this line after your other route definitions
 	http.HandleFunc("/404", handlers.NotFoundHandler)

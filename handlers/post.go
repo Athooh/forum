@@ -330,3 +330,54 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(fmt.Sprintf(`{"likes": %d, "dislikes": %d}`, likes, dislikes)))
 }
+
+func UserPostHandler(w http.ResponseWriter, r *http.Request) {
+	userID := r.Context().Value(userIDKey).(int)
+	posts, err := database.GetPostsByUserID(userID)
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error retrieving posts: %v", err))
+		return
+	}
+
+	// Get category counts
+	categoryCounts, err := database.GetCategoryPostCounts()
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error retrieving category counts: %v", err))
+		return
+	}
+
+	// Check if user is authenticated
+	isAuthenticated := userID != 0
+
+	// Get username if authenticated
+	var username string
+	if isAuthenticated {
+		username = getUsername(userID)
+	}
+
+	// Add username to posts
+	for i := range posts {
+		posts[i].Username = getUsername(posts[i].UserID)
+		if len(posts[i].Content) > 200 {
+			posts[i].Preview = posts[i].Content[:200] + "..."
+		} else {
+			posts[i].Preview = posts[i].Content
+		}
+		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
+	}
+
+	data := map[string]interface{}{
+		"Title":           "Forum - Home",
+		"IsLoggedIn":      isAuthenticated,
+		"Username":        username,
+		"Posts":           posts,
+		"Categories":      categoryCounts,
+		"IsAuthenticated": isAuthenticated,
+	}
+
+	err = templates.ExecuteTemplate(w, "dashboard", data)
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error rendering template: %v", err))
+		return
+	}
+}

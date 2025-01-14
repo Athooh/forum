@@ -37,6 +37,8 @@ type Comment struct {
 	CreatedAt      time.Time
 	Username       string // Add this field to store the comment author's username
 	CreatedAtHuman string // Human-readable time difference
+	Likes          int    `json:"likes"`
+	Dislikes       int    `json:"dislikes"`
 }
 
 var DB *sql.DB
@@ -154,6 +156,20 @@ func createTables() {
 		log.Fatalf("Failed to create post_reactions table: %v\n", err)
 	}
 
+	commentReactionTable := `
+    CREATE TABLE IF NOT EXISTS comment_reactions (
+        user_id INTEGER,
+        comment_id INTEGER,
+        reaction TEXT CHECK(reaction IN ('like', 'dislike')),
+        PRIMARY KEY (user_id, comment_id),
+        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (comment_id) REFERENCES comments(id)
+    );`
+	_, err = DB.Exec(commentReactionTable)
+	if err != nil {
+		log.Fatalf("Failed to create comment_reactions table: %v\n", err)
+	}
+
 }
 
 // AddComment inserts a new comment into the database.
@@ -166,7 +182,9 @@ func AddComment(postID, userID int, content string) error {
 // GetCommentsByPostID retrieves all comments for a specific post ID.
 func GetCommentsByPostID(postID int) ([]Comment, error) {
 	query := `
-        SELECT c.id, c.post_id, c.user_id, c.content, c.created_at, u.username
+        SELECT c.id, c.post_id, c.user_id, c.content, c.created_at, u.username,
+               (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction = 'like') as likes,
+               (SELECT COUNT(*) FROM comment_reactions WHERE comment_id = c.id AND reaction = 'dislike') as dislikes
         FROM comments c
         LEFT JOIN users u ON c.user_id = u.id
         WHERE c.post_id = ?
@@ -181,7 +199,16 @@ func GetCommentsByPostID(postID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.ID, &comment.PostID, &comment.UserID, &comment.Content, &comment.CreatedAt, &comment.Username)
+		err := rows.Scan(
+			&comment.ID,
+			&comment.PostID,
+			&comment.UserID,
+			&comment.Content,
+			&comment.CreatedAt,
+			&comment.Username,
+			&comment.Likes,
+			&comment.Dislikes,
+		)
 		if err != nil {
 			return nil, err
 		}
@@ -588,4 +615,59 @@ func GetCommentsCount(postID int) (int, error) {
 	query := `SELECT COUNT(*) FROM comments WHERE post_id = ?`
 	err := DB.QueryRow(query, postID).Scan(&count)
 	return count, err
+}
+
+func GetUsernameByID(userID int) (string, error) {
+	var username string
+	err := DB.QueryRow("SELECT username FROM users WHERE id = ?", userID).Scan(&username)
+	if err != nil {
+		return "", err
+	}
+	return username, nil
+}
+
+// ToggleCommentReaction handles the like/dislike functionality for comments
+func ToggleCommentReaction(userID, commentID int, reaction string) error {
+	var existingReaction string
+	query := `SELECT reaction FROM comment_reactions WHERE user_id = ? AND comment_id = ?`
+	err := DB.QueryRow(query, userID, commentID).Scan(&existingReaction)
+
+	if err == sql.ErrNoRows {
+		// No existing reaction, insert a new one
+		insertQuery := `INSERT INTO comment_reactions (user_id, comment_id, reaction) VALUES (?, ?, ?)`
+		_, err := DB.Exec(insertQuery, userID, commentID, reaction)
+		return err
+	} else if err != nil {
+		return err
+	}
+
+	if existingReaction == reaction {
+		// Remove reaction if clicking the same button
+		deleteQuery := `DELETE FROM comment_reactions WHERE user_id = ? AND comment_id = ?`
+		_, err := DB.Exec(deleteQuery, userID, commentID)
+		return err
+	} else {
+		// Update existing reaction
+		updateQuery := `UPDATE comment_reactions SET reaction = ? WHERE user_id = ? AND comment_id = ?`
+		_, err := DB.Exec(updateQuery, reaction, userID, commentID)
+		return err
+	}
+}
+
+// GetCommentReactionCounts returns the number of likes and dislikes for a comment
+func GetCommentReactionCounts(commentID int) (likes int, dislikes int, err error) {
+	likesQuery := `SELECT COUNT(*) FROM comment_reactions WHERE comment_id = ? AND reaction = 'like'`
+	dislikesQuery := `SELECT COUNT(*) FROM comment_reactions WHERE comment_id = ? AND reaction = 'dislike'`
+
+	err = DB.QueryRow(likesQuery, commentID).Scan(&likes)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	err = DB.QueryRow(dislikesQuery, commentID).Scan(&dislikes)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	return likes, dislikes, nil
 }

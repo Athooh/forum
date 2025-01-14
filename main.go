@@ -53,6 +53,8 @@ func main() {
 	http.Handle("/add-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.AddCommentHandler)))
 	http.Handle("/edit-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.EditCommentHandler)))
 	http.Handle("/delete-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.DeleteCommentHandler)))
+	http.Handle("/like-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.LikeCommentHandler)))
+	http.Handle("/dislike-comment", handlers.AuthMiddleware(http.HandlerFunc(handlers.DislikeCommentHandler)))
 
 	http.Handle("/posts-by-category", handlers.AuthMiddleware(http.HandlerFunc(handlers.PostsByCategoryHandler)))
 	http.Handle("/user-posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.UserPostHandler)))

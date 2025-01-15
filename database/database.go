@@ -313,6 +313,75 @@ func GetPostsByUserID(userID int) ([]Post, error) {
 	return posts, nil
 }
 
+func GetLikesByUserID(userID int) ([]Post, error) {
+	query := `
+	SELECT p.id, p.user_id, p.title, p.content, p.category, p.image_url, p.created_at, p.updated_at,
+		IFNULL(likes.count, 0) AS likes,
+		IFNULL(dislikes.count, 0) AS dislikes,
+		IFNULL(comments.count, 0) AS comments_count
+	FROM posts p
+	LEFT JOIN (
+		SELECT post_id, COUNT(*) AS count
+		FROM post_reactions
+		WHERE reaction = 'like'
+		GROUP BY post_id
+	) AS likes ON p.id = likes.post_id
+	LEFT JOIN (
+		SELECT post_id, COUNT(*) AS count
+		FROM post_reactions
+		WHERE reaction = 'dislike'
+		GROUP BY post_id
+	) AS dislikes ON p.id = dislikes.post_id
+	LEFT JOIN (
+			SELECT post_id, COUNT(*) AS count
+			FROM comments
+			GROUP BY post_id
+	) AS comments ON p.id = comments.post_id
+	WHERE p.id IN (SELECT post_id FROM post_reactions WHERE user_id = ? AND reaction = 'like')
+	ORDER BY p.created_at DESC`
+
+	rows, err := DB.Query(query, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var posts []Post
+	for rows.Next() {
+		var post Post
+		var imageURL sql.NullString // Handle nullable image_url
+
+		err := rows.Scan(
+			&post.ID,
+			&post.UserID,
+			&post.Title,
+			&post.Content,
+			&post.Category,
+			&imageURL, // Added to retrieve the image URL
+			&post.CreatedAt,
+			&post.UpdatedAt,
+			&post.Likes,
+			&post.Dislikes,
+			&post.CommentsCount,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		// Handle NULL image_url
+		if imageURL.Valid {
+			post.ImageURL = imageURL.String
+		}
+
+		// Truncate content for preview and format time
+		post.Preview = utils.TruncateContent(post.Content, 30) // Limit to 30 words
+		post.CreatedAtHuman = utils.TimeAgo(post.CreatedAt)    // Populate human-readable time
+
+		posts = append(posts, post)
+	}
+	return posts, nil
+}
+
 // GetAllPosts retrieves all posts with optional filtering by category, including like, dislike, and comment counts.
 func GetAllPosts(category string) ([]Post, error) {
 	var rows *sql.Rows

@@ -58,6 +58,7 @@ func main() {
 
 	http.Handle("/posts-by-category", handlers.AuthMiddleware(http.HandlerFunc(handlers.PostsByCategoryHandler)))
 	http.Handle("/user-posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.UserPostHandler)))
+	http.Handle("/liked-posts", handlers.AuthMiddleware(http.HandlerFunc(handlers.FilterLikesHandler)))
 
 	// Add this line after your other route definitions
 	http.HandleFunc("/404", handlers.NotFoundHandler)

@@ -85,8 +85,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Update the posts container with new content
                     postsContainer.innerHTML = `
                         <h3>${category} discussions</h3>
-                        <p>Join the conversation and share your thoughts</p>
-                        <div class="create-post">
+                             <div class="create-post">
                             <a href="/create-post" class="btn-create-post">Create New Post</a>
                         </div>
                         ${postsHTML}

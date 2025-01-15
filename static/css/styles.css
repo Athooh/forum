@@ -8,12 +8,13 @@
 
     /* Primary Colors */
   --primary-color: #121212; /* Blue */
-  --secondary-color: #6c757d; /* Gray */
+  --secondary-color: #838e97; /* Gray */
   
   /* Background Colors */
   --tw-bg-opacity: 1;
   --background-color: rgb(126 34 206 / var(--tw-bg-opacity));
-  --header-background: #f34f44; /* Dark gray */
+  --header-background: #f34f44; /* Red */
+  --card-background:#272529; /* Dark Gray */
   
   /* Text Colors */
   --text-color: #444; /* Almost black */
@@ -48,6 +49,10 @@ h3, h4 {
     font-family: "poppins", sans-serif;
 }
 
+header {
+    background: var(--card-background);
+}
+
 
 header.header-container {
     display: flex;
@@ -55,7 +60,7 @@ header.header-container {
     align-items: center;
     padding-inline: 2rem;
     padding-block: 1rem;
-    border-bottom: 1px solid rgba(211, 211, 211, 0.267);
+    /* border-bottom: 1px solid rgba(211, 211, 211, 0.267); */
 }
 
 .menu {
@@ -343,10 +348,12 @@ header.header-container {
 .sidebar {
     /* width: 100%; */
     height: 100vh;
-    background-color: var(--primary-color);
-    border-right: 1px solid rgba(211, 211, 211, 0.267);
+    background-color: var(--card-background);
+    border-radius: 4px;
+    /* border-right: 1px solid rgba(211, 211, 211, 0.267); */
     padding: 20px;
     overflow: hidden;
+    margin-top: 20px;
 }
 
 .sidebar-links, .side-categoies {
@@ -391,9 +398,11 @@ header.header-container {
 
 .posts {
     width: 100%;
-    max-width: 730px;
+    max-width: 92%;
     height: calc(100vh - 30px);
-    margin: 30px auto;
+    background-color: var(--card-background);
+    border-radius: 4px;
+    margin: 20px auto;
     padding: 0 20px;
     overflow-y: auto;
     scrollbar-width: none; /* Firefox */
@@ -415,12 +424,15 @@ header.header-container {
 }
 
 .posts h3 {
+    box-sizing: border-box;
     font-size: 1.7rem;
     font-family: "poppins", sans-serif;
     font-weight: 550;
     text-transform: capitalize;
+    width: 100%;
     max-width: 700px;
-    padding-left: 20px;
+    margin: 20px auto;
+    text-align: left;
 }
 
 .posts p, .create-post {
@@ -442,7 +454,7 @@ header.header-container {
 /* Post Form Styles */
 .post-form {
     width: 100%;
-    max-width: 900px;
+    max-width: 80%;
     margin: 0 auto;
     padding: 20px;
     box-sizing: border-box;
@@ -450,8 +462,7 @@ header.header-container {
 
 .post-form .form-group {
     width: 100%;
-    max-width: 900px;
-    margin-bottom: 20px;
+    margin: 0 0 20px 0;
     box-sizing: border-box;
 }
 
@@ -483,7 +494,7 @@ header.header-container {
     border-radius: 5px;
     cursor: pointer;
     font-size: 1rem;
-    margin-top: 20px;
+    margin: 20px 0 0 0;
     box-sizing: border-box;
 }
 
@@ -669,31 +680,58 @@ hr {
     overflow: hidden;
 }
 
+
 .view-post-container .post-container {
     width: 100%;
-    max-width: 1100px;
+    max-width: 95%;
     height: calc(100vh - 80px); /* Adjust based on your header height */
     overflow-y: auto;
-    padding: 20px;
-    margin: 0 auto;
+    padding: 20px 0;
+    margin: 20px auto;
 }
 
 .create-post-container .posts, .edit-post-container .posts {
     width: 100%;
-    max-width: 900px;
+    max-width: 97%;
     height: calc(100vh - 80px); /* Adjust based on your header height */
     overflow-y: auto;
-    padding: 20px;
-    margin: 0 auto;
+    padding: 20px 0;
+    margin: 20px auto;
     box-sizing: border-box;
+}
+
+.create-post-container .posts h3 , .edit-post-container .posts h3 {
+    width: 100%;
+    max-width: 80%;
+    margin: 0 auto;
+    padding-left: 20px;
+}
+.view-post-container .post-header {
+    width: 100%;
+    margin: 0 auto;
+    max-width: 90%;
 }
 
 .view-post-container .post-header h3 {
     padding-left: 0;
+    max-width: 90%;
+    /* margin-left: 0; */
+}
+
+.view-post-container .post-header p {
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
+}
+
+.view-post-container .comments-section h3 {
+    padding-left: 0;
 }
 
 .post-footer {
-    margin-bottom: 80px; /* Give space for the comment form */
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto 60px; /* Give space for the comment form */
 }
 
 /* edit and delete post options */
@@ -784,14 +822,15 @@ a .dropdown-item{
 
 .post p {
     font-size: 0.95em;
-    color: #E0E0E0;
+    color: var(--secondary-color);
     line-height: 1.4;
 }
 
-.post .reaction {
+.dash-container .post .reaction {
     margin-top: 10px;
     font-size: 0.9em;
     color: #777;
+    margin-left: 0;
 }
 
 .post .reaction i {
@@ -802,14 +841,14 @@ a .dropdown-item{
 .post-content {
     white-space: pre-wrap;
     word-wrap: break-word;
-    max-width: 1000px;
-    margin: 0;
+    max-width: 90%;
+    margin: 0 auto;
 }
 
 .post-content p {
     width: 100%;
-    max-width: 1000px;
-    margin: 20px 0;
+    max-width: 90%;
+    margin: 20px auto;
 }
 
 
@@ -825,10 +864,11 @@ a .dropdown-item{
 
 .post-image-full {
     width: 100%;
+    max-width: 90%;
     max-height: 500px;
     object-fit: cover;
     border-radius: 8px;
-    margin: 0;
+    margin-left: 10px;
     border: 1px solid rgba(211, 211, 211, 0.267);
 }
 /* email validation */
@@ -947,6 +987,9 @@ a .dropdown-item{
     display: flex;
     align-items: center;
     gap: 20px;
+    width: 100%;
+    max-width: 90%;
+    margin: 0 auto;
 }
 
 .reaction i {
@@ -961,8 +1004,8 @@ a .dropdown-item{
 /* Comments Section Styles */
 .comments-section {
     width: 100%;
-    max-width: 950px;
-    margin: 30px 0;
+    max-width: 90%;
+    margin: 30px auto;
     box-sizing: border-box;
 }
 
@@ -972,7 +1015,7 @@ a .dropdown-item{
 
 .comments-section h3 {
     margin-bottom: 20px;
-    color: #333;
+    color: #6b6b6b;
     margin-left: 0;
 }
 
@@ -1194,18 +1237,20 @@ a .dropdown-item{
 }
 
 /* Add container for post header */
-.post-header {
-    max-width: 700px;
+/* .post-header {
+    max-width: 90%;
     margin: 0;
-}
+} */
 
 /* Right Sidebar Styles */
 .right-sidebar {
     /* width: 100%; */
+    margin-top: 20px;
     height: 100vh;
     padding: 20px;
-    background-color: var(--primary-color);
-    border-left: 1px solid rgba(211, 211, 211, 0.267);
+    background-color: var(--card-background);
+    border-radius: 4px;
+    /* border-left: 1px solid rgba(211, 211, 211, 0.267); */
     overflow-y: auto;
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* IE/Edge */
@@ -1498,6 +1543,7 @@ Announcements
     }
 
     .posts {
+        background: none;
         margin: 0 auto;
         width: 100%;
         max-width: 850px;
@@ -1506,9 +1552,28 @@ Announcements
         overflow-x: hidden;
     }
 
+    .post-card {
+        margin: 10px auto;
+        background: var(--card-background);
+    }
+
+    .post-content, .post-footer, .view-post-container .post-header p {
+        max-width: 100%;
+        padding: 0;
+    }
+
+    .view-post-container .post-header h3 {
+        max-width: 100%;
+    }
+
+    hr {
+        display: none;
+    }
+
     .dash-container .posts h3 {
         padding-left: 0;
-        margin: 10px auto;
+        margin: 10px auto 0;
+        max-width: 700px;
     }
 
     header.header-container {
@@ -1565,6 +1630,16 @@ Announcements
         grid-template-columns: 1fr; /* Only the posts section is visible */
     }
 
+    .dash-container .posts h3 {
+        max-width: 700px;
+        padding-left: 0;
+        margin: 10px auto;
+    }
+
+    hr {
+        display: none;
+    }
+
     .sidebar, .right-sidebar {
         display: none; /* Hide sidebars */
     }
@@ -1574,6 +1649,7 @@ Announcements
     }
 
     .posts {
+        background: none;
         margin: 0 auto;
         width: 100%;
         max-width: 800px;
@@ -1582,8 +1658,14 @@ Announcements
         overflow-x: hidden;
     }
 
+    .post-card {
+        margin: 10px auto;
+        background: var(--card-background);
+    }
+
     .post-form {
-        width: 95%;
+        width: 100%;
+        max-width: 95%;
         padding: 10px;
     }
     
@@ -1598,7 +1680,7 @@ Announcements
     }
 
     .post-container {
-        width: 95%;
+        width: 100%;
         max-width: 100%;
         box-sizing: border-box;
         padding: 0 10px;
@@ -1619,6 +1701,11 @@ Announcements
         grid-template-columns: 1fr; /* Only the posts section is visible */
     }
 
+    .dash-container .posts h3 {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
     .sidebar, .right-sidebar {
         display: none; /* Hide sidebars */
     }
@@ -1627,10 +1714,25 @@ Announcements
         display: none; /* Hide search bar */
     }
 
+    hr {
+        display: none;
+        /* margin-block: 5px; */
+    }
+
     .posts {
-        margin: 0 auto;
+        background: none;
+        margin: 10px auto;
         width: 95%;
         padding-inline: 0;
+    }
+
+    .create-post {
+        margin-left: 0;
+    }
+
+    .post-card {
+        background: var(--card-background);
+        margin: 10px auto;
     }
 
     .login-container, .signup-container {
@@ -1666,7 +1768,7 @@ Announcements
     }
 
     .posts {
-        margin: 0 auto;
+        margin: 10px auto;
         width: 100%;
         max-width: 490px;
         padding-inline: 0;
@@ -1674,10 +1776,12 @@ Announcements
 
     .posts h3 {
         padding-left: 0;
+        margin-left: 0;
     }
 
     .post-card {
-        margin: 0 auto;
+        background: var(--card-background);
+        margin: 10px auto;
         width: 95%;
         max-width: 490px;
     }
@@ -1728,6 +1832,11 @@ Announcements
         grid-template-columns: 1fr; /* Only the posts section is visible */
     }
 
+    .dash-container .posts h3 {
+        padding-left: 0;
+        margin-left: 0;
+    }
+
     .sidebar, .right-sidebar {
         display: none; /* Hide sidebars */
     }
@@ -1737,14 +1846,16 @@ Announcements
     }
 
     .posts {
-        margin: 0 auto;
+        background: none;
+        margin: 10px auto;
         width: 95%;
         max-width: 410px;
         padding-inline: 0;
     }
 
     .post-card {
-        margin: 0 auto;
+        background: var(--card-background);
+        margin: 10px auto;
         width: 95%;
         max-width: 410px;
     }
@@ -1806,20 +1917,32 @@ Announcements
     }
 
     .posts, .create-post-container .posts {
-        margin: 0 auto;
+        margin: 10px auto;
         width: 95%;
         max-width: 390px;
         padding-inline: 0;
+        background: none;
+    }
+
+    .create-post-container .posts h3, .edit-post-container .posts h3 {
+        max-width: 95%;
+        padding-left: 0;
     }
     
     .dash-container .posts h3 {
         padding-left: 0;
+        margin-left: 0;
     }
 
     .post-card {
-        margin: 0 auto;
+        background: var(--card-background);
+        margin: 10px auto;
         width: 95%;
         max-width: 390px;
+    }
+
+    .post-form {
+        max-width: 100%;
     }
 
     .login-container, .signup-container {
@@ -1868,14 +1991,14 @@ Announcements
     }
 
     .posts {
-        margin: 0 auto;
+        margin: 10px auto;
         width: 95%;
         max-width: 350px;
         padding-inline: 0;
     }
 
     .post-card {
-        margin: 0 auto;
+        margin: 10px auto;
         width: 95%;
         max-width: 350px;
     }
@@ -1908,6 +2031,12 @@ Announcements
 
     .form-group input:active {
         color: none;
+    }
+}
+
+@media (max-width: 344px) {
+    .post .reaction i, .btn-share {
+        font-size: .6rem;
     }
 }
 

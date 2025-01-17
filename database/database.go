@@ -486,9 +486,10 @@ func GetAllPosts(category string) ([]Post, error) {
 }
 
 // UpdatePost updates an existing post.
-func UpdatePost(postID int, title, content, category string) error {
+func UpdatePost(postID int, title, content string, category []string) error {
+	categoryStr := strings.Join(category, ",")
 	query := `UPDATE posts SET title = ?, content = ?, category = ?, updated_at = ? WHERE id = ?`
-	_, err := DB.Exec(query, title, content, category, time.Now(), postID)
+	_, err := DB.Exec(query, title, content, categoryStr, time.Now(), postID)
 	return err
 }
 
@@ -596,9 +597,11 @@ func GetReactionCounts(postID int) (int, int, error) {
 }
 
 // CreatePostWithImage creates a new post with an optional image.
-func CreatePostWithImage(userID int, title, content, category, imageURL string) error {
+func CreatePostWithImage(userID int, title, content string, category []string, imageURL string) error {
+	categoryStr := strings.Join(category, ",")
+
 	query := `INSERT INTO posts (user_id, title, content, category, image_url) VALUES (?, ?, ?, ?, ?)`
-	_, err := DB.Exec(query, userID, title, content, category, imageURL)
+	_, err := DB.Exec(query, userID, title, content, categoryStr, imageURL)
 	return err
 }
 

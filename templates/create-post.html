@@ -20,7 +20,7 @@
         <form action="/create-post" method="POST" enctype="multipart/form-data" class="post-form">
             <div class="form-group">
                 <label for="category">Category:</label>
-                <select id="category" name="category" required>
+                <select id="category" name="category[]" multiple required>
                     {{range .Categories}}
                     <option value="{{.}}">{{.}}</option>
                     {{end}}

@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"strconv"
 	"time"
 
@@ -332,10 +333,16 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserPostHandler(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(userIDKey).(int)
+	userID, ok := r.Context().Value(userIDKey).(int)
+	if !ok {
+        log.Println("User ID not found in context")
+        RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
+        return
+    }
+
 	posts, err := database.GetPostsByUserID(userID)
 	if err != nil {
-		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error retrieving posts: %v", err))
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to retrieve posts: %v", err))
 		return
 	}
 
@@ -354,6 +361,7 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 	if isAuthenticated {
 		username = getUsername(userID)
 	}
+	categoriesArray := make([]string, 0)
 
 	// Add username to posts
 	for i := range posts {
@@ -364,6 +372,7 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 			posts[i].Preview = posts[i].Content
 		}
 		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
+		categoriesArray = strings.Split(posts[i].Category, ",")
 	}
 
 	data := map[string]interface{}{
@@ -372,6 +381,7 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 		"Username":        username,
 		"Posts":           posts,
 		"Categories":      categoryCounts,
+		"CategoriesArray": categoriesArray,
 		"IsAuthenticated": isAuthenticated,
 	}
 

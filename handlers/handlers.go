@@ -2,8 +2,8 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"net/http"
+	"path/filepath"
 	"text/template"
 
 	"forum/database"
@@ -11,6 +11,7 @@ import (
 )
 
 var templates *template.Template
+var errorTemplates *template.Template
 
 // At the top of your handlers package, add this type definition
 type contextKey string
@@ -18,34 +19,30 @@ type contextKey string
 // Define your key constant
 const userIDKey contextKey = "user_id"
 
-func init() {
-	// Parse all templates including error templates
-	var err error
-	templates, err = template.ParseGlob("templates/*.html")
-	if err != nil {
-		log.Fatalf("Error parsing templates: %v", err)
-	}
+// InitTemplates initializes templates from the given base directory
+func InitTemplates(baseDir string) error {
+    var err error
+    templates, err = template.ParseGlob(filepath.Join(baseDir, "templates", "*.html"))
+    if err != nil {
+        return fmt.Errorf("error parsing templates: %v", err)
+    }
 
-	// Parse error templates
-	errorTemplates, err := template.ParseGlob("templates/error/*.html")
-	if err != nil {
-		log.Fatalf("Error parsing error templates: %v", err)
-	}
+    errorTemplates, err = template.ParseGlob(filepath.Join(baseDir, "templates", "error", "*.html"))
+    if err != nil {
+        return fmt.Errorf("error parsing error templates: %v", err)
+    }
 
-	// Add error templates to the main template set
-	for _, t := range errorTemplates.Templates() {
+    // Add error templates to the main template set
+    for _, t := range errorTemplates.Templates() {
         if tmpl := templates.Lookup(t.Name()); tmpl == nil {
             templates, err = templates.AddParseTree(t.Name(), t.Tree)
             if err != nil {
-				log.Fatalf("Error adding template %s: %v", t.Name(), err)
-			}
-		}
-	}
+                return fmt.Errorf("error adding template %s: %v", t.Name(), err)
+            }
+        }
+    }
 
-	// Print actual template names for debugging
-	for _, t := range templates.Templates() {
-		fmt.Println("Parsed template name:", t.Name())
-	}
+    return nil
 }
 
 func HomeHandler(w http.ResponseWriter, r *http.Request) {

@@ -361,7 +361,6 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 	if isAuthenticated {
 		username = getUsername(userID)
 	}
-	categoriesArray := make([]string, 0)
 
 	// Add username to posts
 	for i := range posts {
@@ -372,7 +371,8 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 			posts[i].Preview = posts[i].Content
 		}
 		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
-		categoriesArray = strings.Split(posts[i].Category, ",")
+		posts[i].CategoryArray = strings.Split(posts[i].Category, ",")
+		fmt.Println(posts[i].CategoryArray)
 	}
 
 	data := map[string]interface{}{
@@ -381,7 +381,6 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 		"Username":        username,
 		"Posts":           posts,
 		"Categories":      categoryCounts,
-		"CategoriesArray": categoriesArray,
 		"IsAuthenticated": isAuthenticated,
 	}
 

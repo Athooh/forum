@@ -18,6 +18,7 @@ type Post struct {
 	Content        string
 	Preview        string // Truncated content for preview
 	Category       string
+	CategoryArray  []string // New field to store the category as an array
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	Username       string // Add this field to store the post author's username

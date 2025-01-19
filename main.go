@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 
@@ -12,6 +13,12 @@ import (
 func main() {
 	// initialize database
 	database.InitDB()
+
+	// Initialize templates
+	err := handlers.InitTemplates(".")
+	if err != nil {
+		log.Fatalf("Failed to initialize templates: %v", err)
+	}
 
 	// Serve static files (CSS, JS)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

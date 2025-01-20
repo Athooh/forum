@@ -509,25 +509,25 @@ func GetCategoryPostCounts() (map[string]int, error) {
     `
 
 	rows, err := DB.Query(query)
-    if err != nil {
-        return nil, err
-    }
-    defer rows.Close()
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 
-    counts := make(map[string]int)
-    for rows.Next() {
-        var categoryStr string
-        if err := rows.Scan(&categoryStr); err != nil {
-            return nil, err
-        }
+	counts := make(map[string]int)
+	for rows.Next() {
+		var categoryStr string
+		if err := rows.Scan(&categoryStr); err != nil {
+			return nil, err
+		}
 
-        // Split the category string into individual categories
-        categories := strings.Split(categoryStr, ",")
-        for _, category := range categories {
-            category = strings.TrimSpace(category) // Trim any extra spaces
-            counts[category]++
-        }
-    }
+		// Split the category string into individual categories
+		categories := strings.Split(categoryStr, ",")
+		for _, category := range categories {
+			category = strings.TrimSpace(category) // Trim any extra spaces
+			counts[category]++
+		}
+	}
 
 	return counts, nil
 }
@@ -748,4 +748,11 @@ func GetCommentReactionCounts(commentID int) (likes int, dislikes int, err error
 	}
 
 	return likes, dislikes, nil
+}
+
+func UpdatePostWithImage(postID int, title, content string, category []string, imageURL string) error {
+	categoryStr := strings.Join(category, ",")
+	query := `UPDATE posts SET title = ?, content = ?, category = ?, image_url = ?, updated_at = ? WHERE id = ?`
+	_, err := DB.Exec(query, title, content, categoryStr, imageURL, time.Now(), postID)
+	return err
 }

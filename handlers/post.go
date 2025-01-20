@@ -372,7 +372,6 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
 		posts[i].CategoryArray = strings.Split(posts[i].Category, ",")
-		fmt.Println(posts[i].CategoryArray)
 	}
 
 	data := map[string]interface{}{

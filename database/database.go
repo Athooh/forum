@@ -391,9 +391,9 @@ func GetAllPosts(category string) ([]Post, error) {
 	if category != "" {
 		query := `
 		SELECT p.id, p.user_id, p.title, p.content, p.category, p.image_url, p.created_at, p.updated_at,
-		       IFNULL(likes.count, 0) AS likes, 
-		       IFNULL(dislikes.count, 0) AS dislikes,
-		       IFNULL(comments.count, 0) AS comments_count
+			IFNULL(likes.count, 0) AS likes, 
+			IFNULL(dislikes.count, 0) AS dislikes,
+			IFNULL(comments.count, 0) AS comments_count
 		FROM posts p
 		LEFT JOIN (
 			SELECT post_id, COUNT(*) AS count
@@ -412,10 +412,10 @@ func GetAllPosts(category string) ([]Post, error) {
 			FROM comments
 			GROUP BY post_id
 		) AS comments ON p.id = comments.post_id
-		WHERE p.category = ?
+		WHERE p.category LIKE ?
 		ORDER BY p.created_at DESC`
 
-		rows, err = DB.Query(query, category)
+		rows, err = DB.Query(query, "%"+category+"%")
 	} else {
 		query := `
 		SELECT p.id, p.user_id, p.title, p.content, p.category, p.image_url, p.created_at, p.updated_at,
@@ -504,26 +504,30 @@ func DeletePost(postID int) error {
 // GetCategoryPostCounts retrieves the number of posts for each category.
 func GetCategoryPostCounts() (map[string]int, error) {
 	query := `
-        SELECT category, COUNT(*) as count 
-        FROM posts 
-        GROUP BY category
+        SELECT category 
+        FROM posts
     `
 
 	rows, err := DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-	counts := make(map[string]int)
-	for rows.Next() {
-		var category string
-		var count int
-		if err := rows.Scan(&category, &count); err != nil {
-			return nil, err
-		}
-		counts[category] = count
-	}
+    counts := make(map[string]int)
+    for rows.Next() {
+        var categoryStr string
+        if err := rows.Scan(&categoryStr); err != nil {
+            return nil, err
+        }
+
+        // Split the category string into individual categories
+        categories := strings.Split(categoryStr, ",")
+        for _, category := range categories {
+            category = strings.TrimSpace(category) // Trim any extra spaces
+            counts[category]++
+        }
+    }
 
 	return counts, nil
 }

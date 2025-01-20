@@ -564,21 +564,9 @@ hr {
     gap: 10px;
 }
 
-/* .category-tag {
-    background: none;
-    padding: 4px;
-    border: 1px solid rgba(211, 211, 211, 0.267);
-    border-radius: 20px;
-}
-
-.category-tag p {
-    font-size: .7rem;
-    color: var(--header-background);
-} */
-
 .category-tag ul {
     display: flex;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
     padding: 0;
     margin: 0;
     list-style: none;
@@ -588,8 +576,9 @@ hr {
     margin-right: 10px;
     background-color: var(--card-background);
     padding: 5px 10px;
+    border: 1px solid rgba(211, 211, 211, 0.267);
     border-radius: 5px;
-    color: var(--text-color);
+    color: var(--header-background);
     font-family: "poppins", sans-serif;
 }
 

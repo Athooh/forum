@@ -69,7 +69,3 @@ func PostsByCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// GetCategoriesHandler handles fetching all categories
-func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
-	// Move categories fetching code here
-}

@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"path/filepath"
 	"text/template"
+	"strings"
 
 	"forum/database"
 	"forum/utils"
@@ -84,6 +85,7 @@ func HomeHandler(w http.ResponseWriter, r *http.Request) {
 			posts[i].Preview = posts[i].Content
 		}
 		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
+		posts[i].CategoryArray = strings.Split(posts[i].Category, ",")
 	}
 
 	data := map[string]interface{}{
@@ -125,6 +127,7 @@ func DashboardHandler(w http.ResponseWriter, r *http.Request) {
 		} else {
 			posts[i].Username = username
 		}
+		posts[i].CategoryArray = strings.Split(posts[i].Category, ",")
 	}
 
 	// Retrieve category post counts

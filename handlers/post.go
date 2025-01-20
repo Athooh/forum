@@ -6,8 +6,9 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"strings"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"forum/database"
@@ -67,56 +68,74 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 		// Handle image upload
 		var imageURL string
 		file, header, err := r.FormFile("image")
+		log.Printf("File upload attempt - Header: %+v, Error: %v", header, err)
+
 		if err == nil && header != nil {
 			defer file.Close()
 
-			imagePath := fmt.Sprintf("uploads/%d_%s", time.Now().Unix(), header.Filename)
-			dst, err := os.Create(imagePath)
-			if err != nil {
-				log.Printf("Failed to create image file: %v", err)
-				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to upload image: %v", err))
-				return
-			}
-			defer dst.Close()
+			// Add debug logging for content type
+			fileType := header.Header.Get("Content-Type")
+			log.Printf("File type detected: %s", fileType)
 
-			_, err = io.Copy(dst, file)
+			// Read the file into memory
+			fileBytes, err := io.ReadAll(file)
 			if err != nil {
-				log.Printf("Failed to save image: %v", err)
-				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save image: %v", err))
+				log.Printf("Error reading file: %v", err)
+				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to read file: %v", err))
 				return
 			}
 
-			// Compress and resize the image
-			compressedImagePath := fmt.Sprintf("uploads/compressed_%d_%s", time.Now().Unix(), header.Filename)
-			err = utils.CompressAndResizeImage(imagePath, compressedImagePath, 900, 700, 80) // Max width 900px, height 700px, quality 85
+			// Generate unique filename with original extension
+			ext := filepath.Ext(header.Filename)
+			if ext == "" {
+				// If no extension provided, derive it from content type
+				switch fileType {
+				case "image/jpeg", "image/jpg":
+					ext = ".jpg"
+				case "image/png":
+					ext = ".png"
+				case "image/gif":
+					ext = ".gif"
+				case "image/webp":
+					ext = ".webp"
+				case "image/bmp":
+					ext = ".bmp"
+				default:
+					log.Printf("Unsupported file type: %s", fileType)
+					RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("unsupported file type: %s", fileType))
+					return
+				}
+			}
+
+			newFilename := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+			uploadPath := filepath.Join("uploads", newFilename)
+
+			// Save the original file
+			err = os.WriteFile(uploadPath, fileBytes, 0644)
 			if err != nil {
-				log.Printf("Failed to compress image: %v", err)
-				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to compress image: %v", err))
+				log.Printf("Error saving file: %v", err)
+				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save file: %v", err))
 				return
 			}
 
-			// Remove the original uncompressed image
-			err = os.Remove(imagePath)
-			if err != nil {
-				log.Printf("Failed to delete original image: %v", err)
-			}
-
-			imageURL = "/" + compressedImagePath
-
+			// Set the image URL
+			imageURL = "/uploads/" + newFilename
+			log.Printf("File successfully saved. Image URL: %s", imageURL)
 		} else if err != http.ErrMissingFile {
 			log.Printf("Error retrieving file: %v", err)
 			RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save file: %v", err))
 			return
 		}
 
-		// Save the post with optional image URL
+		// Create post in database
 		err = database.CreatePostWithImage(userID, title, content, category, imageURL)
 		if err != nil {
-			log.Printf("Failed to create post: %v", err)
-			RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error creating post: %v", err))
+			log.Printf("Error creating post in database: %v", err)
+			RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to create post: %v", err))
 			return
 		}
 
+		log.Printf("Post successfully created with image URL: %s", imageURL)
 		http.Redirect(w, r, "/dashboard", http.StatusSeeOther)
 	}
 }
@@ -266,6 +285,8 @@ func ViewPostHandler(w http.ResponseWriter, r *http.Request) {
 		comments[i].CreatedAtHuman = utils.TimeAgo(comments[i].CreatedAt)
 	}
 
+	log.Printf("Post details - ID: %d, ImageURL: %s", id, post.ImageURL)
+
 	data := map[string]interface{}{
 		"Title":           post.Title + " - Forum",
 		"IsLoggedIn":      isAuthenticated,
@@ -335,10 +356,10 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 	userID, ok := r.Context().Value(userIDKey).(int)
 	if !ok {
-        log.Println("User ID not found in context")
-        RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
-        return
-    }
+		log.Println("User ID not found in context")
+		RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
+		return
+	}
 
 	posts, err := database.GetPostsByUserID(userID)
 	if err != nil {

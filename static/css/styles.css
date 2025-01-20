@@ -577,7 +577,7 @@ hr {
     background-color: var(--card-background);
     padding: 5px 10px;
     border: 1px solid rgba(211, 211, 211, 0.267);
-    border-radius: 5px;
+    border-radius: 20px;
     color: var(--header-background);
     font-family: "poppins", sans-serif;
 }

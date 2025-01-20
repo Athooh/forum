@@ -69,7 +69,7 @@ func TestCreatePostHandler(t *testing.T) {
 			if tt.method == http.MethodPost {
 				writer.WriteField("title", tt.title)
 				writer.WriteField("content", tt.content)
-				writer.WriteField("category", tt.category)
+				writer.WriteField("category[]", tt.category)
 				writer.Close()
 			}
 

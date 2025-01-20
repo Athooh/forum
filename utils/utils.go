@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
+	"log"
+	"net/http"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
@@ -199,4 +202,45 @@ func min(a, b float64) float64 {
 		return a
 	}
 	return b
+}
+
+// ConfigureUploadHandler sets up the file upload handler
+func ConfigureUploadHandler() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		log.Printf("Handling upload request: %s", r.URL.Path)
+
+		// Set proper content type header based on file extension
+		ext := strings.ToLower(filepath.Ext(r.URL.Path))
+		switch ext {
+		case ".jpg", ".jpeg":
+			w.Header().Set("Content-Type", "image/jpeg")
+		case ".png":
+			w.Header().Set("Content-Type", "image/png")
+		case ".gif":
+			w.Header().Set("Content-Type", "image/gif")
+		case ".webp":
+			w.Header().Set("Content-Type", "image/webp")
+		case ".bmp":
+			w.Header().Set("Content-Type", "image/bmp")
+		}
+
+		// Serve the file
+		http.FileServer(http.Dir(".")).ServeHTTP(w, r)
+	}
+}
+
+
+// InitializeUploadDirectory creates and configures the uploads directory
+func InitializeUploadDirectory() error {
+    if _, err := os.Stat("uploads"); os.IsNotExist(err) {
+        err = os.MkdirAll("uploads", 0755)
+        if err != nil {
+            return fmt.Errorf("failed to create uploads directory: %v", err)
+        }
+        log.Printf("Uploads directory created/verified at: %s", filepath.Join(".", "uploads"))
+        if err := os.Chmod("uploads", 0755); err != nil {
+            log.Printf("Warning: Failed to set uploads directory permissions: %v", err)
+        }
+    }
+    return nil
 }

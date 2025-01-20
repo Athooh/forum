@@ -4,60 +4,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
-	"path/filepath"
-	"strings"
 
 	"forum/database"
 	"forum/handlers"
+	"forum/utils"
 )
 
 func main() {
 	// initialize database
 	database.InitDB()
 
-	// Add after database.InitDB()
-	if _, err := os.Stat("uploads"); os.IsNotExist(err) {
-		err = os.MkdirAll("uploads", 0755)
-		if err != nil {
-			log.Fatalf("Failed to create uploads directory: %v", err)
-		}
-		log.Printf("Uploads directory created/verified at: %s", filepath.Join(".", "uploads"))
-		if err := os.Chmod("uploads", 0755); err != nil {
-			log.Printf("Warning: Failed to set uploads directory permissions: %v", err)
-		}
+	// Initialize upload directory
+	if err := utils.InitializeUploadDirectory(); err != nil {
+		log.Fatalf("Failed to initialize upload directory: %v", err)
 	}
 
 	// Initialize templates
-	err := handlers.InitTemplates(".")
-	if err != nil {
+	if err := handlers.InitTemplates("."); err != nil {
 		log.Fatalf("Failed to initialize templates: %v", err)
 	}
 
 	// Serve static files (CSS, JS)
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
-	// handles uploaded files
-	http.HandleFunc("/uploads/", func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Handling upload request: %s", r.URL.Path)
 
-		// Set proper content type header based on file extension
-		ext := strings.ToLower(filepath.Ext(r.URL.Path))
-		switch ext {
-		case ".jpg", ".jpeg":
-			w.Header().Set("Content-Type", "image/jpeg")
-		case ".png":
-			w.Header().Set("Content-Type", "image/png")
-		case ".gif":
-			w.Header().Set("Content-Type", "image/gif")
-		case ".webp":
-			w.Header().Set("Content-Type", "image/webp")
-		case ".bmp":
-			w.Header().Set("Content-Type", "image/bmp")
-		}
-
-		// Serve the file
-		http.FileServer(http.Dir(".")).ServeHTTP(w, r)
-	})
+	// Handle uploaded files
+	http.HandleFunc("/uploads/", utils.ConfigureUploadHandler())
 
 	// Define explicit routes
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

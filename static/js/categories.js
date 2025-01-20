@@ -36,7 +36,9 @@ document.addEventListener('DOMContentLoaded', () => {
                                 </div>
                                 <div class="category-tag-container">
                                     <div class="category-tag">
-                                        <p>${post.Category}</p>
+                                        <ul>
+                                            ${post.Category.split(',').map(cat => `<li><span class="category">${cat.trim()}</span></li>`).join('')}
+                                        </ul>                                        
                                     </div>
                                     ${post.IsOwner ? `
                                         <div class="post-options-menu">

@@ -18,6 +18,7 @@ type Post struct {
 	Content        string
 	Preview        string // Truncated content for preview
 	Category       string
+	CategoryArray  []string // New field to store the category as an array
 	CreatedAt      time.Time
 	UpdatedAt      time.Time
 	Username       string // Add this field to store the post author's username
@@ -390,9 +391,9 @@ func GetAllPosts(category string) ([]Post, error) {
 	if category != "" {
 		query := `
 		SELECT p.id, p.user_id, p.title, p.content, p.category, p.image_url, p.created_at, p.updated_at,
-		       IFNULL(likes.count, 0) AS likes, 
-		       IFNULL(dislikes.count, 0) AS dislikes,
-		       IFNULL(comments.count, 0) AS comments_count
+			IFNULL(likes.count, 0) AS likes, 
+			IFNULL(dislikes.count, 0) AS dislikes,
+			IFNULL(comments.count, 0) AS comments_count
 		FROM posts p
 		LEFT JOIN (
 			SELECT post_id, COUNT(*) AS count
@@ -411,10 +412,10 @@ func GetAllPosts(category string) ([]Post, error) {
 			FROM comments
 			GROUP BY post_id
 		) AS comments ON p.id = comments.post_id
-		WHERE p.category = ?
+		WHERE p.category LIKE ?
 		ORDER BY p.created_at DESC`
 
-		rows, err = DB.Query(query, category)
+		rows, err = DB.Query(query, "%"+category+"%")
 	} else {
 		query := `
 		SELECT p.id, p.user_id, p.title, p.content, p.category, p.image_url, p.created_at, p.updated_at,
@@ -486,9 +487,10 @@ func GetAllPosts(category string) ([]Post, error) {
 }
 
 // UpdatePost updates an existing post.
-func UpdatePost(postID int, title, content, category string) error {
+func UpdatePost(postID int, title, content string, category []string) error {
+	categoryStr := strings.Join(category, ",")
 	query := `UPDATE posts SET title = ?, content = ?, category = ?, updated_at = ? WHERE id = ?`
-	_, err := DB.Exec(query, title, content, category, time.Now(), postID)
+	_, err := DB.Exec(query, title, content, categoryStr, time.Now(), postID)
 	return err
 }
 
@@ -502,26 +504,30 @@ func DeletePost(postID int) error {
 // GetCategoryPostCounts retrieves the number of posts for each category.
 func GetCategoryPostCounts() (map[string]int, error) {
 	query := `
-        SELECT category, COUNT(*) as count 
-        FROM posts 
-        GROUP BY category
+        SELECT category 
+        FROM posts
     `
 
 	rows, err := DB.Query(query)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
+    if err != nil {
+        return nil, err
+    }
+    defer rows.Close()
 
-	counts := make(map[string]int)
-	for rows.Next() {
-		var category string
-		var count int
-		if err := rows.Scan(&category, &count); err != nil {
-			return nil, err
-		}
-		counts[category] = count
-	}
+    counts := make(map[string]int)
+    for rows.Next() {
+        var categoryStr string
+        if err := rows.Scan(&categoryStr); err != nil {
+            return nil, err
+        }
+
+        // Split the category string into individual categories
+        categories := strings.Split(categoryStr, ",")
+        for _, category := range categories {
+            category = strings.TrimSpace(category) // Trim any extra spaces
+            counts[category]++
+        }
+    }
 
 	return counts, nil
 }
@@ -596,9 +602,11 @@ func GetReactionCounts(postID int) (int, int, error) {
 }
 
 // CreatePostWithImage creates a new post with an optional image.
-func CreatePostWithImage(userID int, title, content, category, imageURL string) error {
+func CreatePostWithImage(userID int, title, content string, category []string, imageURL string) error {
+	categoryStr := strings.Join(category, ",")
+
 	query := `INSERT INTO posts (user_id, title, content, category, image_url) VALUES (?, ?, ?, ?, ?)`
-	_, err := DB.Exec(query, userID, title, content, category, imageURL)
+	_, err := DB.Exec(query, userID, title, content, categoryStr, imageURL)
 	return err
 }
 

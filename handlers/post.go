@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"strconv"
 	"time"
 
@@ -55,9 +56,9 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 
 		title := r.FormValue("title")
 		content := r.FormValue("content")
-		category := r.FormValue("category")
+		category := r.Form["category[]"]
 
-		if title == "" || content == "" || category == "" {
+		if title == "" || content == "" || len(category) == 0 {
 			log.Println("Missing required fields")
 			RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("title, content, and category are required"))
 			return
@@ -169,7 +170,7 @@ func EditPostHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		title := r.FormValue("title")
 		content := r.FormValue("content")
-		category := r.FormValue("category")
+		category := r.Form["category[]"]
 
 		err := database.UpdatePost(postID, title, content, category)
 		if err != nil {
@@ -332,10 +333,16 @@ func DislikePostHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func UserPostHandler(w http.ResponseWriter, r *http.Request) {
-	userID := r.Context().Value(userIDKey).(int)
+	userID, ok := r.Context().Value(userIDKey).(int)
+	if !ok {
+        log.Println("User ID not found in context")
+        RenderErrorPage(w, http.StatusUnauthorized, fmt.Errorf("unauthorized"))
+        return
+    }
+
 	posts, err := database.GetPostsByUserID(userID)
 	if err != nil {
-		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error retrieving posts: %v", err))
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to retrieve posts: %v", err))
 		return
 	}
 
@@ -364,6 +371,7 @@ func UserPostHandler(w http.ResponseWriter, r *http.Request) {
 			posts[i].Preview = posts[i].Content
 		}
 		posts[i].CreatedAtHuman = utils.TimeAgo(posts[i].CreatedAt)
+		posts[i].CategoryArray = strings.Split(posts[i].Category, ",")
 	}
 
 	data := map[string]interface{}{

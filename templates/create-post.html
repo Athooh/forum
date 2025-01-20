@@ -20,11 +20,14 @@
         <form action="/create-post" method="POST" enctype="multipart/form-data" class="post-form">
             <div class="form-group">
                 <label for="category">Category:</label>
-                <select id="category" name="category" required>
+                <div id="category">
                     {{range .Categories}}
-                    <option value="{{.}}">{{.}}</option>
+                    <div>
+                        <input type="checkbox" id="category-{{.}}" name="category[]" value="{{.}}">
+                        <label for="category-{{.}}">{{.}}</label>
+                    </div>
                     {{end}}
-                </select>
+                </div>
             </div>
             <div class="form-group">
                 <label for="title">Title:</label>

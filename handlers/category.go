@@ -69,3 +69,13 @@ func PostsByCategoryHandler(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+func GetCategoriesHandler(w http.ResponseWriter, r *http.Request) {
+	categories, err := database.GetCategoryPostCounts()
+	if err != nil {
+		RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("error retrieving categories: %v", err))
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(categories)
+}

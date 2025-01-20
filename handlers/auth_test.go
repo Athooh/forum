@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"text/template"
 	"time"
 )
 
@@ -90,81 +91,104 @@ func TestLoginHandler(t *testing.T) {
 }
 
 func TestSignUpHandler(t *testing.T) {
-	// Setup test database
-	database.DB, _ = sql.Open("sqlite3", ":memory:")
-	defer database.DB.Close()
+    // Setup test database
+    database.DB, _ = sql.Open("sqlite3", ":memory:")
+    defer database.DB.Close()
+    
+    // Create users table
+    database.DB.Exec(`
+        CREATE TABLE users (
+            id INTEGER PRIMARY KEY,
+            email TEXT UNIQUE,
+            username TEXT UNIQUE,
+            password TEXT
+        )
+    `)
 
-	// Create users table
-	database.DB.Exec(`
-		CREATE TABLE users (
-			id INTEGER PRIMARY KEY,
-			email TEXT UNIQUE,
-			username TEXT UNIQUE,
-			password TEXT
-		)
-	`)
+    // Setup test template
+    tmpl := template.Must(template.New("signup").Parse(`
+        {{define "signup"}}
+        <html>
+            <body>
+                <h1>{{.Title}}</h1>
+                {{if .Error}}<p>{{.Error}}</p>{{end}}
+                <form method="POST">
+                    <input name="email" type="email">
+                    <input name="username" type="text">
+                    <input name="password" type="password">
+                    <button type="submit">Sign Up</button>
+                </form>
+            </body>
+        </html>
+        {{end}}
+    `))
+    
+    // Store the original template and restore it after the test
+    originalTemplates := templates
+    templates = tmpl
+    defer func() { templates = originalTemplates }()
 
-	tests := []struct {
-		name           string
-		method         string
-		email          string
-		username       string
-		password       string
-		expectedStatus int
-	}{
-		{
-			name:           "GET Signup Page",
-			method:         "GET",
-			expectedStatus: http.StatusOK,
-		},
-		{
-			name:           "POST Valid Signup",
-			method:         "POST",
-			email:          "test@example.com",
-			username:       "newuser",
-			password:       "StrongPass123!",
-			expectedStatus: http.StatusSeeOther,
-		},
-		{
-			name:           "POST Invalid Email",
-			method:         "POST",
-			email:          "invalid-email",
-			username:       "user",
-			password:       "password",
-			expectedStatus: http.StatusOK, // Returns to signup page with error
-		},
-		{
-			name:           "POST Weak Password",
-			method:         "POST",
-			email:          "test@example.com",
-			username:       "user",
-			password:       "weak",
-			expectedStatus: http.StatusOK, // Returns to signup page with error
-		},
-	}
+    tests := []struct {
+        name           string
+        method         string
+        email         string
+        username      string
+        password      string
+        expectedStatus int
+    }{
+        {
+            name:           "GET Signup Page",
+            method:         "GET",
+            expectedStatus: http.StatusOK,
+        },
+        {
+            name:           "POST Valid Signup",
+            method:         "POST",
+            email:         "test@example.com",
+            username:      "newuser",
+            password:      "StrongPass123!",
+            expectedStatus: http.StatusSeeOther,
+        },
+        {
+            name:           "POST Invalid Email",
+            method:         "POST",
+            email:         "invalid-email",
+            username:      "user",
+            password:      "password",
+            expectedStatus: http.StatusOK, // Returns to signup page with error
+        },
+        {
+            name:           "POST Weak Password",
+            method:         "POST",
+            email:         "test@example.com",
+            username:      "user",
+            password:      "weak",
+            expectedStatus: http.StatusOK, // Returns to signup page with error
+        },
+    }
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var req *http.Request
-			if tt.method == "GET" {
-				req = httptest.NewRequest("GET", "/signup", nil)
-			} else {
-				form := url.Values{}
-				form.Add("email", tt.email)
-				form.Add("username", tt.username)
-				form.Add("password", tt.password)
-				req = httptest.NewRequest("POST", "/signup", strings.NewReader(form.Encode()))
-				req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-			}
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            var req *http.Request
+            if tt.method == "GET" {
+                req = httptest.NewRequest("GET", "/signup", nil)
+            } else {
+                form := url.Values{}
+                form.Add("email", tt.email)
+                form.Add("username", tt.username)
+                form.Add("password", tt.password)
+                req = httptest.NewRequest("POST", "/signup", strings.NewReader(form.Encode()))
+                req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+            }
 
-			w := httptest.NewRecorder()
-			SignUpHandler(w, req)
+            w := httptest.NewRecorder()
+            SignUpHandler(w, req)
 
-			if w.Code != tt.expectedStatus {
-				t.Errorf("SignUpHandler() status = %v, want %v", w.Code, tt.expectedStatus)
-			}
-		})
-	}
+            if w.Code != tt.expectedStatus {
+                t.Errorf("SignUpHandler() status = %v, want %v", w.Code, tt.expectedStatus)
+            }
+        })
+    }
 }
 
 func TestLogoutHandler(t *testing.T) {

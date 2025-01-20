@@ -263,21 +263,3 @@ func TestOwnershipMiddleware(t *testing.T) {
 		})
 	}
 }
-
-// func TestMain(m *testing.M) {
-// 	// Create a temporary test template
-// 	templates = template.New("test")
-// 	templates.New("login").Parse(`{{define "login"}}Login Template{{end}}`)
-// 	templates.New("signup").Parse(`{{define "signup"}}Signup Template{{end}}`)
-// 	templates.New("dashboard").Parse(`{{define "dashboard"}}Dashboard Template{{end}}`)
-// 	templates.New("post-list").Parse(`{{define "post-list"}}Post List Template{{end}}`)
-// 	templates.New("400").Parse(`{{define "400"}}400 Error{{end}}`)
-// 	templates.New("401").Parse(`{{define "401"}}401 Error{{end}}`)
-// 	templates.New("403").Parse(`{{define "403"}}403 Error{{end}}`)
-// 	templates.New("404").Parse(`{{define "404"}}404 Error{{end}}`)
-// 	templates.New("405").Parse(`{{define "405"}}405 Error{{end}}`)
-// 	templates.New("500").Parse(`{{define "500"}}500 Error{{end}}`)
-
-// 	// Run tests
-// 	m.Run()
-// }

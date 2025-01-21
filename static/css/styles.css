@@ -739,6 +739,62 @@ hr {
     margin: 0 auto 60px; /* Give space for the comment form */
 }
 
+/* Dropdown styling */
+.dropdown {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.dropdown-toggle {
+    background-color: #f9f9f9;
+    color: #333;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.dropdown-toggle i {
+    margin-left: auto;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--primary-color);
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    width: 95%;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 1;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.category-item input[type="checkbox"] {
+    margin-right: 10px;
+}
+
+.category-item label {
+    cursor: pointer;
+    white-space: nowrap; /* Prevents text from wrapping */
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
 /* edit and delete post options */
 .post-options-menu {
     position: relative;
@@ -1647,6 +1703,11 @@ Announcements
 
     .sidebar, .right-sidebar {
         display: none; /* Hide sidebars */
+        padding: 20px 0;
+    }
+
+    .sidebar-links, .side-categoies {
+        padding-left: .5rem;
     }
 
     .search-bar {
@@ -1699,7 +1760,22 @@ Announcements
         width: 100%;
         box-sizing: border-box;
     }
+
+    .category-item {
+        flex-direction: row; /* Ensure checkbox and label are in the same line */
+        /* align-items: start; Align items vertically */
+    }
+
+    .category-item input[type="checkbox"] {
+        margin-left: 0; /* Add spacing between checkbox and label */
+        max-width: 30px;
+    }
+
+    .dropdown-content {
+        max-height: 150px; /* Adjust max height for smaller screens */
+    }
 }
+
 
 @media (max-width: 768px) {
     .dash-container {
@@ -1757,8 +1833,8 @@ Announcements
     .form-group input:active {
         color: none;
     }
-}
 
+   
 @media (max-width: 540px) {
     .dash-container {
         grid-template-columns: 1fr; /* Only the posts section is visible */

@@ -20,13 +20,18 @@
         <form action="/create-post" method="POST" enctype="multipart/form-data" class="post-form">
             <div class="form-group">
                 <label for="category">Category:</label>
-                <div id="category">
-                    {{range .Categories}}
-                    <div>
-                        <input type="checkbox" id="category-{{.}}" name="category[]" value="{{.}}">
-                        <label for="category-{{.}}">{{.}}</label>
+                <div class="dropdown">
+                    <button type="button" class="dropdown-toggle" onclick="toggleDropdown()">
+                        Select Categories <i class="fa-solid fa-chevron-down"></i>
+                    </button>
+                    <div id="category-dropdown" class="dropdown-content">
+                        {{range .Categories}}
+                        <div class="category-item">
+                            <input type="checkbox" id="category-{{.}}" name="category[]" value="{{.}}">
+                            <label for="category-{{.}}">{{.}}</label>
+                        </div>
+                        {{end}}
                     </div>
-                    {{end}}
                 </div>
             </div>
             <div class="form-group">

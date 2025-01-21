@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"image"
 	"image/jpeg"
-	"image/gif"
 	"image/png"
 	"log"
 	"net/http"
@@ -18,7 +17,7 @@ import (
 
 	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
-	"golang.org/x/image/draw"
+
 )
 
 // HashPassword hashes a plain text password using bcrypt.
@@ -147,7 +146,7 @@ func TruncateContent(content string, wordLimit int) string {
 
 
 // CompressAndResizeImage resizes and compresses an image to the specified dimensions and quality.
-// It supports multiple formats (JPEG, PNG, GIF) and compresses them to less than 100KB.
+// It only uses standard Go packages.
 func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, quality int) error {
 	// Open the input file
 	file, err := os.Open(inputPath)
@@ -156,7 +155,7 @@ func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, q
 	}
 	defer file.Close()
 
-	// Decode the image (supports multiple formats)
+	// Decode the image (supports JPEG and PNG)
 	img, format, err := image.Decode(file)
 	if err != nil {
 		return fmt.Errorf("failed to decode image: %v", err)
@@ -181,8 +180,17 @@ func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, q
 	// Create a new blank image with the new dimensions
 	resizedImg := image.NewRGBA(image.Rect(0, 0, newWidth, newHeight))
 
-	// Resize the original image into the new image
-	draw.ApproxBiLinear.Scale(resizedImg, resizedImg.Bounds(), img, bounds, draw.Over, nil)
+	// Resize the original image into the new image using a simple scaling algorithm
+	for y := 0; y < newHeight; y++ {
+		for x := 0; x < newWidth; x++ {
+			// Map the coordinates from the new image to the original image
+			srcX := x * width / newWidth
+			srcY := y * height / newHeight
+
+			// Set the pixel in the new image
+			resizedImg.Set(x, y, img.At(srcX, srcY))
+		}
+	}
 
 	// Create the output file
 	outFile, err := os.Create(outputPath)
@@ -194,11 +202,9 @@ func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, q
 	// Encode the image based on the original format
 	switch format {
 	case "jpeg", "jpg":
-		err = encodeJPEG(outFile, resizedImg, quality)
+		err = jpeg.Encode(outFile, resizedImg, &jpeg.Options{Quality: quality})
 	case "png":
-		err = encodePNG(outFile, resizedImg)
-	case "gif":
-		err = encodeGIF(outFile, resizedImg)
+		err = png.Encode(outFile, resizedImg)
 	default:
 		return fmt.Errorf("unsupported image format: %s", format)
 	}
@@ -207,20 +213,20 @@ func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, q
 		return fmt.Errorf("failed to encode image: %v", err)
 	}
 
-	// Check the file size and adjust quality if necessary
-	for {
-		info, err := outFile.Stat()
-		if err != nil {
-			return fmt.Errorf("failed to get file info: %v", err)
-		}
+	// Check the file size and adjust quality if necessary (only for JPEG)
+	if format == "jpeg" || format == "jpg" {
+		for {
+			info, err := outFile.Stat()
+			if err != nil {
+				return fmt.Errorf("failed to get file info: %v", err)
+			}
 
-		// If the file size is less than 100KB, break the loop
-		if info.Size() <= 100*1024 {
-			break
-		}
+			// If the file size is less than 100KB, break the loop
+			if info.Size() <= 100*1024 {
+				break
+			}
 
-		// Reduce the quality further (only for JPEG)
-		if format == "jpeg" || format == "jpg" {
+			// Reduce the quality further
 			quality -= 5
 			if quality < 5 {
 				quality = 5
@@ -229,32 +235,14 @@ func CompressAndResizeImage(inputPath, outputPath string, maxWidth, maxHeight, q
 			// Re-encode the image with the new quality
 			outFile.Seek(0, 0)
 			outFile.Truncate(0)
-			err = encodeJPEG(outFile, resizedImg, quality)
+			err = jpeg.Encode(outFile, resizedImg, &jpeg.Options{Quality: quality})
 			if err != nil {
 				return fmt.Errorf("failed to re-encode JPEG: %v", err)
 			}
-		} else {
-			// For non-JPEG formats, we can't adjust quality, so we break
-			break
 		}
 	}
 
 	return nil
-}
-
-// encodeJPEG encodes an image as JPEG with the specified quality
-func encodeJPEG(outFile *os.File, img image.Image, quality int) error {
-	return jpeg.Encode(outFile, img, &jpeg.Options{Quality: quality})
-}
-
-// encodePNG encodes an image as PNG
-func encodePNG(outFile *os.File, img image.Image) error {
-	return png.Encode(outFile, img)
-}
-
-// encodeGIF encodes an image as GIF
-func encodeGIF(outFile *os.File, img image.Image) error {
-	return gif.Encode(outFile, img, nil)
 }
 
 // min returns the smaller of two float64 numbers
@@ -279,10 +267,6 @@ func ConfigureUploadHandler() http.HandlerFunc {
 			w.Header().Set("Content-Type", "image/png")
 		case ".gif":
 			w.Header().Set("Content-Type", "image/gif")
-		// case ".webp":
-		// 	w.Header().Set("Content-Type", "image/webp")
-		// case ".bmp":
-		// 	w.Header().Set("Content-Type", "image/bmp")
 		}
 
 		// Serve the file

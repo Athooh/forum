@@ -77,14 +77,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 			fileType := header.Header.Get("Content-Type")
 			log.Printf("File type detected: %s", fileType)
 
-			// Read the file into memory
-			fileBytes, err := io.ReadAll(file)
-			if err != nil {
-				log.Printf("Error reading file: %v", err)
-				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to read file: %v", err))
-				return
-			}
-
 			// Generate unique filename with original extension
 			ext := filepath.Ext(header.Filename)
 			if ext == "" {
@@ -96,10 +88,6 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 					ext = ".png"
 				case "image/gif":
 					ext = ".gif"
-				case "image/webp":
-					ext = ".webp"
-				case "image/bmp":
-					ext = ".bmp"
 				default:
 					log.Printf("Unsupported file type: %s", fileType)
 					RenderErrorPage(w, http.StatusBadRequest, fmt.Errorf("unsupported file type: %s", fileType))
@@ -107,20 +95,47 @@ func CreatePostHandler(w http.ResponseWriter, r *http.Request) {
 				}
 			}
 
-			newFilename := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
-			uploadPath := filepath.Join("uploads", newFilename)
-
-			// Save the original file
-			err = os.WriteFile(uploadPath, fileBytes, 0644)
+			// Create a temporary file to save the uploaded image
+			tempFilename := fmt.Sprintf("%d%s", time.Now().UnixNano(), ext)
+			tempFilePath := filepath.Join("uploads", tempFilename)
+			tempFile, err := os.Create(tempFilePath)
 			if err != nil {
-				log.Printf("Error saving file: %v", err)
+				log.Printf("Error creating temporary file: %v", err)
+				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to create temporary file: %v", err))
+				return
+			}
+			defer tempFile.Close()
+
+			// Copy the uploaded file to the temporary file
+			_, err = io.Copy(tempFile, file)
+			if err != nil {
+				log.Printf("Error saving uploaded file: %v", err)
 				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save file: %v", err))
 				return
 			}
 
-			// Set the image URL
-			imageURL = "/uploads/" + newFilename
-			log.Printf("File successfully saved. Image URL: %s", imageURL)
+			// Define the output path for the compressed image
+			compressedFilename := fmt.Sprintf("compressed_%d%s", time.Now().UnixNano(), ext)
+			compressedFilePath := filepath.Join("uploads", compressedFilename)
+
+			// Compress and resize the image
+			err = utils.CompressAndResizeImage(tempFilePath, compressedFilePath, 800, 600, 80)
+			if err != nil {
+				log.Printf("Error compressing image: %v", err)
+				RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to compress image: %v", err))
+				return
+			}
+
+			// Set the image URL to the compressed file
+			imageURL = "/uploads/" + compressedFilename
+
+			// Optionally, delete the temporary uncompressed file
+			err = os.Remove(tempFilePath)
+			if err != nil {
+				log.Printf("Warning: Failed to delete temporary file: %v", err)
+			}
+
+			log.Printf("File successfully compressed and saved. Image URL: %s", imageURL)
 		} else if err != http.ErrMissingFile {
 			log.Printf("Error retrieving file: %v", err)
 			RenderErrorPage(w, http.StatusInternalServerError, fmt.Errorf("failed to save file: %v", err))

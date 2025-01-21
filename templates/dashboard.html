@@ -61,9 +61,15 @@
                 <div class="category-tag-container">
                     <div class="category-tag">
                         <ul>
-                            {{range .CategoryArray}}
-                            <li>{{.}}</li>
-                            {{end}}
+                            {{ if gt (len .CategoryArray) 1 }}
+                            <li>Multiple</li>
+                            {{ else }}
+
+                            {{ range .CategoryArray }}
+                            <li>{{ . }}</li>
+                            {{ end }}
+
+                            {{ end }}
                         </ul>
                     </div>
                     {{if eq .UserID $.UserID}}
